@@ -24,9 +24,16 @@ Then, you can use the command below in the bash:
   --render-mode="human" -r "fetch"
 ```
 
-
+<!-- 
 **To add the object in the robocasa environment you should:**
 1. create a robocasa environment.
 2. use current conda environment and cd robocasa directory to use `pip install -e .`.
 3. you can use the code `new_base_path = os.path.join(robocasa.models.assets_root, "objects")`.
 4. you should `import os` and `import robocasa` at the top of the environment file.
+` -->
+
+
+
+Problems:
+1. mujoco version conflicts.
+2. can not find robosuite.

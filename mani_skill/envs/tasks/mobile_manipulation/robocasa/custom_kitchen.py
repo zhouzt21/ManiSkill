@@ -4,8 +4,10 @@ from typing import Dict
 import numpy as np
 import sapien
 import torch
-import robocasa
+import robocasa  #can be replaced by other
 import os
+
+from mani_skill.utils.scene_builder.robocasa.scene_builder import FIXTURES,FIXTURES_INTERIOR
 
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.sensors.camera import CameraConfig
@@ -266,7 +268,7 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
         )
 
     @property
-    def _default_viewer_camera_config(self):
+    def _default_viewer_camera_configs(self):  # a bug
         return CameraConfig(
             uid="viewer",
             pose=sapien.Pose([0, 0, 1]),
@@ -280,8 +282,8 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
 
 
 
-    # def _get_obj_cfgs(self):
-    #     cfgs = []
+    def _get_obj_cfgs(self):
+        cfgs = []
 
     #     # cupcake is on the counter and pos from the sink
     #     cfgs.append(
@@ -322,21 +324,21 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
     #         )
     #     )
 
-    #     # The tomato is on the counter and -1.0m away from stove
-    #     cfgs.append(
-    #         dict(
-    #             name="tomato",
-    #             obj_groups="tomato",
-    #             placement=dict(
-    #                 fixture=self.counter,
-    #                 sample_region_kwargs=dict(
-    #                     ref=self.stove,
-    #                 ),
-    #                 size=(0.35, 0.2),
-    #                 pos=("ref", -1.0),
-    #             ),
-    #         )
-    #     )
+        # The tomato is on the counter and -1.0m away from stove
+        cfgs.append(
+            dict(
+                name="tomato",
+                obj_groups="tomato",
+                placement=dict(
+                    fixture=self.counter,
+                    sample_region_kwargs=dict(
+                        ref=self.stove,
+                    ),
+                    size=(0.35, 0.2),
+                    pos=("ref", -1.0),
+                ),
+            )
+        )
 
 
     #     # the onion is on the counter, and it's pos is relative to "ref"->self.stove about 0.0m.
@@ -366,9 +368,14 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
     def _load_scene(self, options: dict):
         self.scene_builder = RoboCasaSceneBuilder(self)
         self.scene_builder.build()
+
+        #  where is data?
         # self.fixtures = data["fixtures"]
         # self.actors = data["actors"]
         # self.fixture_configs = data["fixture_configs"]
+
+
+
         self.fixture_refs = []
         self.objects = []
         self.object_cfgs = []
@@ -395,7 +402,9 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
                         set the obj_groups to this path to do deterministic playback
                         """
                         mjcf_path = cfg["info"]["mjcf_path"]  # or cat -> category 
-                        # replace with correct base path
+
+
+                        # replace with correct base path  ->  can use .maniskill
                         new_base_path = os.path.join(
                             robocasa.models.assets_root, "objects"
                         )
@@ -506,7 +515,7 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
                             object_placements = placement_initializer.sample(
                                 placed_objects=self.scene_builder.scene_data[
                                     self._scene_idx_to_be_loaded
-                                ]["fxtr_placements"]
+                                ]["fxtr_placements"] #fixtures
                             )
                         except RandomizationError:
                             #     if macros.VERBOSE:
@@ -562,6 +571,11 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
             for (k, v) in serialized_refs.items()
         }
 
+        # self.counter = self.scene_builder.get_fixture()
+        # self.fixture_refs[self._scene_idx_to_be_loaded] is None
+        # should find the object in the 
+
+
     def register_fixture_ref(self, ref_name, fn_kwargs):
         """
         Registers a fixture reference for later use. Initializes the fixture
@@ -580,6 +594,8 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
             self.fixture_refs[scene_idx][ref_name] = self.scene_builder.get_fixture(
                 self.scene_builder.scene_data[scene_idx]["fixtures"], **fn_kwargs
             )
+
+
         return self.fixture_refs[scene_idx][ref_name]
 
     def sample_object(

@@ -4,6 +4,8 @@ from typing import Dict
 import numpy as np
 import sapien
 import torch
+import robocasa
+import os
 
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.sensors.camera import CameraConfig
@@ -415,7 +417,7 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
                         freezable=cfg.get("freezable", None),
                         max_size=cfg.get("max_size", (None, None, None)),
                         object_scale=cfg.get("object_scale", None),
-                        rng=self._batched_episode_rng[scene_idx],
+                        rng=self._batched_episode_rng[scene_idx], # new added
                     )
                     if "name" not in cfg:
                         cfg["name"] = "obj_{}".format(obj_num + 1)
@@ -425,7 +427,7 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
 
                 for _ in range(10):
                     objects = {}
-                    if "object_cfgs" in self._ep_meta:   #  episode meta data
+                    if "object_cfgs" in self._ep_meta:  #  episode meta data
                         object_cfgs = self._ep_meta["object_cfgs"]
                         for obj_num, cfg in enumerate(object_cfgs):
                             model, info = _create_obj(cfg)
@@ -648,8 +650,3 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
 
 
 
-
-
-# class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
-#     def __init__(self):
-#         pass

@@ -47,6 +47,7 @@ setup(
         "huggingface_hub",  # we use HF to version control some assets/datasets more easily
     ],
     # Glob patterns do not automatically match dotfiles
+    # 定义了哪些非Python文件应该被包含在包中，例如资源文件、数据文件等
     package_data={
         "mani_skill": ["assets/**", "envs/**/*", "utils/**/*"],
         "warp_maniskill.warp": ["native/*", "native/nanovdb/*"],

@@ -31,6 +31,9 @@ class Args:
     num_envs: Annotated[int, tyro.conf.arg(aliases=["-n"])] = 1
     """Number of environments to run."""
 
+    fixtures_only: Annotated[bool, tyro.conf.arg(aliases=["-fo"])] = True
+    """Only fixtures in the scene or objects in the scene to run."""
+
     control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = None
     """Control mode"""
 

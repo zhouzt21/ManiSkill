@@ -22,8 +22,10 @@ from mani_skill.utils.structs.pose import Pose
 from mani_skill.utils.structs.types import GPUMemoryConfig, SimConfig
 
 
-
-class RoboCasaKitchenEnv(BaseEnv):
+@register_env(
+    "RoboCasaCustomKitchen", max_episode_steps=100, asset_download_ids=["RoboCasa"]
+)
+class RoboCasaCustomKitchenEnv(BaseEnv):
     SUPPORTED_ROBOTS = ["fetch", "none"]
     SUPPORTED_REWARD_MODES = ["none"]
     """
@@ -198,7 +200,7 @@ class RoboCasaKitchenEnv(BaseEnv):
         randomize_cameras=False,
         fixtures_only=False,
         **kwargs,
-    ):
+    ):        
         self.init_robot_base_pos = init_robot_base_pos
 
         # object placement initializer
@@ -276,81 +278,81 @@ class RoboCasaKitchenEnv(BaseEnv):
 
 
 
-    def _get_obj_cfgs(self):
-        cfgs = []
+    # def _get_obj_cfgs(self):
+    #     cfgs = []
 
-        # cupcake is on the counter and pos from the sink
-        cfgs.append(
-            dict(
-                name="cupcake",
-                obj_groups="cupcake",
-                placement=dict(
-                    fixture=self.counter,
-                    sample_region_kwargs=dict(
-                        ref=self.sink, loc="left_right", top_size=(0.6, 0.4)
-                    ),
-                    size=(0.3, 0.5),
-                    pos=("ref", -1.0),
-                    try_to_place_in="tray",
-                ),
-            )
-        )
-
-
-        # the milk is pos from sink on the counter
-        cfgs.append(
-            dict(
-                name="milk",   # the name for python
-                obj_groups="milk",  # the name for folder and address  maybe?
-                graspable=True,
-                placement=dict(
-                    fixture=self.counter,
-                    sample_region_kwargs=dict(
-                        ref=self.sink,
-                        loc="left_right",
-                    ),
-                    size=(0.5, 0.5),
-                    pos=(1.0, -1.0),
-                    offset=(0.2, 0.0), # when have two objects of the same type.
-                    rotation=(2 * np.pi / 8, 3 * np.pi / 8),
-
-                ),
-            )
-        )
-
-        # The tomato is on the counter and -1.0m away from stove
-        cfgs.append(
-            dict(
-                name="tomato",
-                obj_groups="tomato",
-                placement=dict(
-                    fixture=self.counter,
-                    sample_region_kwargs=dict(
-                        ref=self.stove,
-                    ),
-                    size=(0.35, 0.2),
-                    pos=("ref", -1.0),
-                ),
-            )
-        )
+    #     # cupcake is on the counter and pos from the sink
+    #     cfgs.append(
+    #         dict(
+    #             name="cupcake",
+    #             obj_groups="cupcake",
+    #             placement=dict(
+    #                 fixture=self.counter,
+    #                 sample_region_kwargs=dict(
+    #                     ref=self.sink, loc="left_right", top_size=(0.6, 0.4)
+    #                 ),
+    #                 size=(0.3, 0.5),
+    #                 pos=("ref", -1.0),
+    #                 try_to_place_in="tray",
+    #             ),
+    #         )
+    #     )
 
 
-        # the onion is on the counter, and it's pos is relative to "ref"->self.stove about 0.0m.
-        cfgs.append(
-            dict(
-                name="onion",
-                obj_groups="onion",
-                placement=dict(
-                    fixture=self.counter,
-                    sample_region_kwargs=dict(
-                        ref=self.stove,
-                    ),
-                    size=(0.35, 0.2),
-                    pos=("ref", 0.0),
-                ),
-            )
-        )
-        return cfgs
+    #     # the milk is pos from sink on the counter
+    #     cfgs.append(
+    #         dict(
+    #             name="milk",   # the name for python
+    #             obj_groups="milk",  # the name for folder and address  maybe?
+    #             graspable=True,
+    #             placement=dict(
+    #                 fixture=self.counter,
+    #                 sample_region_kwargs=dict(
+    #                     ref=self.sink,
+    #                     loc="left_right",
+    #                 ),
+    #                 size=(0.5, 0.5),
+    #                 pos=(1.0, -1.0),
+    #                 offset=(0.2, 0.0), # when have two objects of the same type.
+    #                 rotation=(2 * np.pi / 8, 3 * np.pi / 8),
+
+    #             ),
+    #         )
+    #     )
+
+    #     # The tomato is on the counter and -1.0m away from stove
+    #     cfgs.append(
+    #         dict(
+    #             name="tomato",
+    #             obj_groups="tomato",
+    #             placement=dict(
+    #                 fixture=self.counter,
+    #                 sample_region_kwargs=dict(
+    #                     ref=self.stove,
+    #                 ),
+    #                 size=(0.35, 0.2),
+    #                 pos=("ref", -1.0),
+    #             ),
+    #         )
+    #     )
+
+
+    #     # the onion is on the counter, and it's pos is relative to "ref"->self.stove about 0.0m.
+    #     cfgs.append(
+    #         dict(
+    #             name="onion",
+    #             obj_groups="onion",
+    #             placement=dict(
+    #                 fixture=self.counter,
+    #                 sample_region_kwargs=dict(
+    #                     ref=self.stove,
+    #                 ),
+    #                 size=(0.35, 0.2),
+    #                 pos=("ref", 0.0),
+    #             ),
+    #         )
+    #     )
+    #     return cfgs
 
 
 
@@ -647,9 +649,7 @@ class RoboCasaKitchenEnv(BaseEnv):
 
 
 
-@register_env(
-    "RoboCasaCustomKitchen", max_episode_steps=100, asset_download_ids=["RoboCasa"]
-)
-class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
-    def __init__(self):
-        pass
+
+# class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
+#     def __init__(self):
+#         pass

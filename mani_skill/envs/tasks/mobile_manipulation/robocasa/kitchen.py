@@ -264,7 +264,7 @@ class RoboCasaKitchenEnv(BaseEnv):
         )
 
     @property
-    def _default_viewer_camera_config(self):
+    def _default_viewer_camera_configs(self):
         return CameraConfig(
             uid="viewer",
             pose=sapien.Pose([0, 0, 1]),

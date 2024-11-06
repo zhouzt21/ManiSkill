@@ -24,6 +24,7 @@ from mani_skill.utils.scene_builder.robocasa.utils.placement_samplers import (
 )
 from mani_skill.utils.structs.pose import Pose
 from mani_skill.utils.structs.types import GPUMemoryConfig, SimConfig
+from mani_skill.utils.scene_builder.robocasa.utils.scene_utils import ROBOCASA_ASSET_DIR
 
 
 @register_env(
@@ -284,80 +285,26 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
 
     def _get_obj_cfgs(self):
         cfgs = []
-
-    #     # cupcake is on the counter and pos from the sink
-    #     cfgs.append(
-    #         dict(
-    #             name="cupcake",
-    #             obj_groups="cupcake",
-    #             placement=dict(
-    #                 fixture=self.counter,
-    #                 sample_region_kwargs=dict(
-    #                     ref=self.sink, loc="left_right", top_size=(0.6, 0.4)
-    #                 ),
-    #                 size=(0.3, 0.5),
-    #                 pos=("ref", -1.0),
-    #                 try_to_place_in="tray",
-    #             ),
-    #         )
-    #     )
-
-
-    #     # the milk is pos from sink on the counter
-    #     cfgs.append(
-    #         dict(
-    #             name="milk",   # the name for python
-    #             obj_groups="milk",  # the name for folder and address  maybe?
-    #             graspable=True,
-    #             placement=dict(
-    #                 fixture=self.counter,
-    #                 sample_region_kwargs=dict(
-    #                     ref=self.sink,
-    #                     loc="left_right",
-    #                 ),
-    #                 size=(0.5, 0.5),
-    #                 pos=(1.0, -1.0),
-    #                 offset=(0.2, 0.0), # when have two objects of the same type.
-    #                 rotation=(2 * np.pi / 8, 3 * np.pi / 8),
-
-    #             ),
-    #         )
-    #     )
-
-        # The tomato is on the counter and -1.0m away from stove
-        cfgs.append(
-            dict(
-                name="tomato",
-                obj_groups="tomato",
-                placement=dict(
-                    fixture=self.counter,
-                    sample_region_kwargs=dict(
-                        ref=self.stove,
-                    ),
-                    size=(0.35, 0.2),
-                    pos=("ref", -1.0),
-                ),
-            )
+        obj_model_path = os.path.join(
+            ROBOCASA_ASSET_DIR, "objects/objaverse/apple/apple_0/model.xml"
         )
-
-
-    #     # the onion is on the counter, and it's pos is relative to "ref"->self.stove about 0.0m.
-    #     cfgs.append(
-    #         dict(
-    #             name="onion",
-    #             obj_groups="onion",
-    #             placement=dict(
-    #                 fixture=self.counter,
-    #                 sample_region_kwargs=dict(
-    #                     ref=self.stove,
-    #                 ),
-    #                 size=(0.35, 0.2),
-    #                 pos=("ref", 0.0),
-    #             ),
-    #         )
-    #     )
-    #     return cfgs
-
+        cfgs.append({
+                "info":{"mjcf_path": obj_model_path,},
+                "type":None,
+                "name":"obj_apple",
+                "obj_groups":None,
+                "placement":dict(
+                        fixture='counter_main_main_group',# a class ? data[0]["fixture_cfgs"]["counter_main_main_group"]
+                        sample_region_kwargs=dict(
+                            ref='counter_main_main_group',
+                        ),
+                        size=(0.35, 0.2),#use[] instead of()?
+                        pos=("ref", -1.0),
+                        rotation=[0,0] 
+                        ),
+                }   
+            )
+        return cfgs
 
 
     def _load_agent(self, options: dict):
@@ -369,12 +316,13 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
         self.scene_builder = RoboCasaSceneBuilder(self)
         self.scene_builder.build()
 
-        #  where is data?
+        # self.scene_builder.scene_data[0]["fixtures"]       # data[0] represents scene 0; data[1] represents scene 1
+        # self.scene_builder.scene_data[0]["fxtr_placements"]
+        # self.scene_builder.scene_data[0]["fixture_cfgs"]   # 'name','model','type','placement' in it.
+
         # self.fixtures = data["fixtures"]
         # self.actors = data["actors"]
         # self.fixture_configs = data["fixture_configs"]
-
-
 
         self.fixture_refs = []
         self.objects = []
@@ -403,10 +351,8 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
                         """
                         mjcf_path = cfg["info"]["mjcf_path"]  # or cat -> category 
 
-
-                        # replace with correct base path  ->  can use .maniskill
                         new_base_path = os.path.join(
-                            robocasa.models.assets_root, "objects"
+                            ROBOCASA_ASSET_DIR, "objects"
                         )
                         new_path = os.path.join(
                             new_base_path, mjcf_path.split("/objects/")[-1]
@@ -416,6 +362,7 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
                     else:
                         obj_groups = cfg.get("obj_groups", "all")
                         exclude_obj_groups = cfg.get("exclude_obj_groups", None)
+
                     object_kwargs, object_info = self.sample_object(
                         obj_groups,
                         exclude_groups=exclude_obj_groups,

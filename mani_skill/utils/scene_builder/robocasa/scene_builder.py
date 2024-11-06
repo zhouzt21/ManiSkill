@@ -51,9 +51,11 @@ from mani_skill.utils.scene_builder.robocasa.utils.placement_samplers import (
     SequentialCompositeSampler,
     UniformRandomSampler,
 )
+from mani_skill.utils.scene_builder.registration import register_scene_builder
 from mani_skill.utils.scene_builder.scene_builder import SceneBuilder
 from mani_skill.utils.structs import Actor
 from mani_skill.utils.structs.pose import Pose
+
 
 FIXTURES = dict(
     hinge_cabinet=HingeCabinet,
@@ -142,6 +144,7 @@ def check_syntax(fixture):
             )
 
 
+@register_scene_builder("RoboCasa")
 class RoboCasaSceneBuilder(SceneBuilder):
     """
     SceneBuilder for the RoboCasa dataset: https://github.com/robocasa/robocasa

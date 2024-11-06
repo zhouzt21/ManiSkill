@@ -264,7 +264,7 @@ class RoboCasaKitchenEnv(BaseEnv):
         )
 
     @property
-    def _default_viewer_camera_config(self):
+    def _default_viewer_camera_configs(self):
         return CameraConfig(
             uid="viewer",
             pose=sapien.Pose([0, 0, 1]),
@@ -562,3 +562,15 @@ class RoboCasaKitchenEnv(BaseEnv):
             max_size=max_size,
             object_scale=object_scale,
         )
+    
+    # def _get_obj_cfgs(self):
+    #     """
+    #     Returns a list of object configurations to use in the environment.
+    #     The object configurations are usually environment-specific and should
+    #     be implemented in the subclass.
+
+    #     Returns:
+    #         list: list of object configurations
+    #     """
+
+    #     return []

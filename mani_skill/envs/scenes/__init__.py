@@ -10,6 +10,7 @@ from mani_skill.utils.scene_builder.replicacad.scene_builder import (
     ReplicaCADSceneBuilder,
 )
 from mani_skill.utils.scene_builder.replicacad.rearrange import *
+from mani_skill.utils.scene_builder.robocasa.scene_builder import RoboCasaSceneBuilder
 
 from .base_env import SceneManipulationEnv
 

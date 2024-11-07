@@ -1,6 +1,7 @@
 from copy import deepcopy
 from typing import Dict
 
+import os
 import numpy as np
 import sapien
 import torch
@@ -20,6 +21,7 @@ from mani_skill.utils.scene_builder.robocasa.utils.placement_samplers import (
 )
 from mani_skill.utils.structs.pose import Pose
 from mani_skill.utils.structs.types import GPUMemoryConfig, SimConfig
+from mani_skill.utils.scene_builder.robocasa.utils.scene_utils import ROBOCASA_ASSET_DIR
 
 
 @register_env(
@@ -315,7 +317,7 @@ class RoboCasaKitchenEnv(BaseEnv):
                         mjcf_path = cfg["info"]["mjcf_path"]
                         # replace with correct base path
                         new_base_path = os.path.join(
-                            robocasa.models.assets_root, "objects"
+                            ROBOCASA_ASSET_DIR, "objects"
                         )
                         new_path = os.path.join(
                             new_base_path, mjcf_path.split("/objects/")[-1]

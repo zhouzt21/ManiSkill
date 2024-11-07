@@ -6,6 +6,7 @@ from .floating_panda_gripper import FloatingPandaGripper
 from .floating_robotiq_2f_85_gripper import *
 from .googlerobot import *
 from .humanoid import Humanoid
+from .mobile_aloha import MobileAloha
 from .panda import *
 from .stompy import Stompy
 from .trifingerpro import TriFingerPro

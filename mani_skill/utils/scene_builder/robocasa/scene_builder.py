@@ -653,6 +653,8 @@ class RoboCasaSceneBuilder(SceneBuilder):
                     for name in matches
                     if self._is_fxtr_valid(fixtures[name], size)
                 ]
+            if(len(matches)<=0):
+                import pdb; pdb.set_trace()
             assert len(matches) > 0
             # sample random key
             # TODO (stao): fix the key!

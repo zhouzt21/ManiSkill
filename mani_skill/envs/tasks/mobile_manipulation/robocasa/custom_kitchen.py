@@ -26,6 +26,9 @@ from mani_skill.utils.structs.pose import Pose
 from mani_skill.utils.structs.types import GPUMemoryConfig, SimConfig
 from mani_skill.utils.scene_builder.robocasa.utils.scene_utils import ROBOCASA_ASSET_DIR
 
+ROBOCASA_OBJAVERSE_DIR = ROBOCASA_ASSET_DIR / "objects/objaverse"
+
+
 
 @register_env(
     "RoboCasaCustomKitchen", max_episode_steps=100, asset_download_ids=["RoboCasa"]
@@ -282,28 +285,72 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
         )
 
 
-
     def _get_obj_cfgs(self):
         cfgs = []
+        # in get_fixture() function
+        # cfgs[0]["placement"]["fixture"] can be "id of fixture class to search for"
+        # you can also click the env objects in the rendering environment sapien.
         obj_model_path = os.path.join(
-            ROBOCASA_ASSET_DIR, "objects/objaverse/apple/apple_0/model.xml"
+            ROBOCASA_OBJAVERSE_DIR, "apple/apple_1/model.xml"
         )
         cfgs.append({
                 "info":{"mjcf_path": obj_model_path,},
                 "type":None,
-                "name":"obj_apple",
+                "name":"obj_apple_1",
                 "obj_groups":None,
                 "placement":dict(
-                        fixture='counter_main_main_group',# a class ? data[0]["fixture_cfgs"]["counter_main_main_group"]
+                        fixture='counter_2_left_group', # the corresponding class is also ok:  self.scene_builder.scene_data[0]["fixtures"]["counter_main_main_group"]
                         sample_region_kwargs=dict(
-                            ref='counter_main_main_group',
+                            ref='counter_2_left_group',
                         ),
-                        size=(0.35, 0.2),#use[] instead of()?
-                        pos=("ref", -1.0),
+                        size=[0.35, 0.2],#[] or () is both ok
+                        pos=('ref', 0.0),
                         rotation=[0,0] 
                         ),
                 }   
             )
+        
+        
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "apple/apple_21/model.xml"
+        )
+        cfgs.append({
+                "info":{"mjcf_path": obj_model_path,},
+                "type":None,
+                "name":"obj_apple_2",
+                "obj_groups":None,
+                "placement":dict(
+                        fixture='counter_main_main_group',
+                        sample_region_kwargs=dict(
+                            ref='counter_main_main_group',
+                        ),
+                        size=(0.7, 0.4),
+                        pos=("ref", 1.0),
+                        rotation=[0,0] 
+                        ),
+                }   
+            )
+
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "milk/milk_0/model.xml"
+        )
+        cfgs.append({
+                "info":{"mjcf_path": obj_model_path,},
+                "type":None,
+                "name":"obj_milk",
+                "obj_groups":None,
+                "placement":dict(
+                        fixture='counter_1_right_group',
+                        sample_region_kwargs=dict(
+                            ref='counter_1_right_group',
+                        ),
+                        size=(0.3, 0.2),
+                        pos=("ref", 0.0),
+                        rotation=[0,0] 
+                        ),
+                }   
+            )
+        
         return cfgs
 
 
@@ -445,6 +492,7 @@ class RoboCasaCustomKitchenEnv(BaseEnv):
                         # self.object_cfgs = [cfg for cfg in self.object_cfgs if "model" in cfg]
                     self.object_cfgs[scene_idx] = object_cfgs
                     self.objects[scene_idx] = objects
+                    ## TODO
                     placement_initializer = (
                         self.scene_builder._get_placement_initializer(
                             self.scene_builder.scene_data[self._scene_idx_to_be_loaded][

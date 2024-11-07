@@ -37,7 +37,7 @@ class SceneManipulationEnv(BaseEnv):
         init_config_idxs (optional): which init configs (additional init options) to sample. Your scene_builder_cls may or may not require these.
     """
 
-    SUPPORTED_ROBOTS = ["panda", "fetch"]
+    SUPPORTED_ROBOTS = ["panda", "fetch", "mobile_aloha"]
     agent: Union[Panda, Fetch]
 
     def __init__(

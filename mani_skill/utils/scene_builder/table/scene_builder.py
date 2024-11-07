@@ -274,3 +274,6 @@ class TableSceneBuilder(SceneBuilder):
                 )
             self.env.agent.reset(qpos)
             self.env.agent.robot.set_pose(sapien.Pose([-0.615, 0, 0]))
+        elif self.env.robot_uids == "mobile_aloha":
+            self.env.agent.robot.set_pose(sapien.Pose(
+                [-1.20, -0.3, -self.table_height + 0.1]))

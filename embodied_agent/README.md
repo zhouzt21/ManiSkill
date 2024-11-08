@@ -1,8 +1,13 @@
 # Embodied Agent
 
+## TODO
+
+- [ ] add some single-stage tasks to verify RDT on skill execution
+- [ ] add some multi-stage tasks to verify VLM on task decomposition
+
 ## Installation
 
-1. Install ManiSkill-3, slightly modified from [the official documentation](https://maniskill.readthedocs.io/en/latest/user_guide/getting_started/installation.html)
+### 1. Install ManiSkill-3, slightly modified from [the official documentation](https://maniskill.readthedocs.io/en/latest/user_guide/getting_started/installation.html)
 
 ```bash
 conda create -n maniskill python=3.10 && conda activate maniskill
@@ -13,7 +18,9 @@ pip install torch==2.1.0 torchvision==0.16.0  --index-url https://download.pytor
 
 PS: Refer to [this instruction](https://maniskill.readthedocs.io/en/latest/user_guide/getting_started/installation.html#troubleshooting) to fix vulkan.
 
-1. Install dependencies for RDT (Robotics Diffsuion Transformer)
+### 2. Install RDT (Robotics Diffsuion Transformer)
+
+1. Install dependencies 
 
 ```bash
 # in the embodied_agent dir
@@ -33,4 +40,30 @@ pip install flash-attn --no-build-isolation
 
 # Install other prequisites
 pip install -r third_party/vla/rdt/requirements.txt
+```
+
+2. Download off-the-shelf multi-modal encoders
+
+You can download the encoders from the following links:
+
+- `t5-v1_1-xxl`: [link](https://huggingface.co/google/t5-v1_1-xxl/tree/main)🤗
+- `siglip`: [link](https://huggingface.co/google/siglip-so400m-patch14-384)🤗
+
+And link the encoders to the repo directory:
+
+```bash
+# Under the root directory of this repo
+mkdir -p google
+
+# Link the downloaded encoders to this repo
+ln -s /path/to/t5-v1_1-xxl google/t5-v1_1-xxl
+ln -s /path/to/siglip-so400m-patch14-384 google/siglip-so400m-patch14-384
+```
+
+In this repo, we also store the pretrained weights for RDT in the same dir
+
+- `RDT-1B`: [link](https://huggingface.co/robotics-diffusion-transformer/rdt-1b)🤗
+
+```bash
+ln -s /path/to/rdt-1b google/rdt-1b
 ```

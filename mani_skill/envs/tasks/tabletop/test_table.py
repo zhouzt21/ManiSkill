@@ -58,8 +58,8 @@ class TestTableEnv(BaseEnv):
             b = len(env_idx)
             self.table_scene.initialize(env_idx)
             xyz = torch.zeros((b, 3))
-            xyz[:, 0] = -0.7
-            xyz[:, 1] = 0
+            xyz[:, 0] = -0.5
+            xyz[:, 1] = 0.2
             xyz[:, 2] = self.cube_half_size
             # qs = randomization.random_quaternions(b, lock_x=True, lock_y=True)
             self.cube.set_pose(Pose.create_from_pq(xyz)) #, qs))

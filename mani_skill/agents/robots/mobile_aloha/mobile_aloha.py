@@ -113,7 +113,7 @@ class MobileAloha(BaseAgent):
             lower=None, upper=None,
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
-            normalize_action=False
+            normalize_action=False, #True,
         )
         arm_config_fn_dict["pd_joint_delta_pos"] = partial(
             PDJointPosControllerConfig,
@@ -121,6 +121,7 @@ class MobileAloha(BaseAgent):
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
             use_delta=True,
+            normalize_action=False, #True,
         )
         arm_config_fn_dict["pd_joint_target_delta_pos"] = partial(
             PDJointPosControllerConfig,
@@ -129,6 +130,7 @@ class MobileAloha(BaseAgent):
             damping=self.joint_damping,
             use_delta=True,
             use_target=True,
+            normalize_action=False, #True,
         )
 
         # PD EE position
@@ -139,6 +141,7 @@ class MobileAloha(BaseAgent):
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
             urdf_path=self.urdf_path,
+            normalize_action=False, #True,
         )
         arm_config_fn_dict["pd_ee_delta_pose"] = partial(
             PDEEPoseControllerConfig,
@@ -149,6 +152,7 @@ class MobileAloha(BaseAgent):
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
             urdf_path=self.urdf_path,
+            normalize_action=False, #True,
         )
         arm_config_fn_dict["pd_ee_target_delta_pos"] = partial(
             PDEEPosControllerConfig,
@@ -158,6 +162,7 @@ class MobileAloha(BaseAgent):
             damping=self.joint_damping,
             urdf_path=self.urdf_path,
             use_target=True,
+            normalize_action=False, #True,
         )
         arm_config_fn_dict["pd_ee_target_delta_pose"] = partial(
             PDEEPoseControllerConfig,
@@ -169,6 +174,7 @@ class MobileAloha(BaseAgent):
             damping=self.joint_damping,
             urdf_path=self.urdf_path,
             use_target=True,
+            normalize_action=False, #True,
         )
 
         # PD ee position (for human-interaction/teleoperation)
@@ -181,7 +187,8 @@ class MobileAloha(BaseAgent):
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
             urdf_path=self.urdf_path,
-            frame="ee_align"
+            frame="ee_align",
+            normalize_action=False, #True,
         )
 
         # PD joint velocity
@@ -190,6 +197,7 @@ class MobileAloha(BaseAgent):
             lower=-1.0,
             upper=1.0,
             damping=self.joint_damping,  # this might need to be tuned separately
+            normalize_action=False, #True,
         )
 
         # PD joint position and velocity
@@ -208,6 +216,7 @@ class MobileAloha(BaseAgent):
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
             use_delta=True,
+            normalize_action=False, #True,
         )
 
         # -------------------------------------------------------------------------- #
@@ -219,6 +228,7 @@ class MobileAloha(BaseAgent):
             upper=0.045,
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
+            normalize_action=False, #True,
         )
 
         controller_configs = dict()
@@ -292,5 +302,34 @@ class MobileAloha(BaseAgent):
     def _after_init(self):
         return super()._after_init()
     
-    def get_arm_base_pose(self, arm_id: int = 0):
-        assert arm_id in [0, 1]
+    def get_state(self) -> Dict:
+        """Get current state, including robot state and controller state"""
+        state = dict()
+        
+        # robot state
+        state["robot_root_pose"] = self.robot.root.pose
+        state["robot_root_vel"] = self.robot.root.get_linear_velocity()
+        state["robot_root_qvel"] = self.robot.root.get_angular_velocity()
+
+        fl_arm_joints = [self.robot.find_joint_by_name(joint_name) for joint_name in self.fl_arm_joint_names]
+        fr_arm_joints = [self.robot.find_joint_by_name(joint_name) for joint_name in self.fr_arm_joint_names]
+        fl_gripper_joints = [self.robot.find_joint_by_name(joint_name) for joint_name in self.fl_gripper_joint_names]
+        fr_gripper_joints = [self.robot.find_joint_by_name(joint_name) for joint_name in self.fr_gripper_joint_names]
+
+        state["fl_arm_qpos"] = torch.stack([joint.qpos for joint in fl_arm_joints], dim=-1)
+        state["fr_arm_qpos"] = torch.stack([joint.qpos for joint in fr_arm_joints], dim=-1)
+        state["fl_gripper_qpos"] = torch.stack([joint.qpos for joint in fl_gripper_joints], dim=-1)
+        state["fr_gripper_qpos"] = torch.stack([joint.qpos for joint in fr_gripper_joints], dim=-1)
+
+        state["fl_arm_qvel"] = torch.stack([joint.qvel for joint in fl_arm_joints], dim=-1)
+        state["fr_arm_qvel"] = torch.stack([joint.qvel for joint in fr_arm_joints], dim=-1)
+        state["fl_gripper_qvel"] = torch.stack([joint.qvel for joint in fl_gripper_joints], dim=-1)
+        state["fr_gripper_qvel"] = torch.stack([joint.qvel for joint in fr_gripper_joints], dim=-1)
+
+        state["fl_EE_pose"] = self.robot.find_link_by_name(self.fl_ee_link_name).pose.raw_pose
+        state["fr_EE_pose"] = self.robot.find_link_by_name(self.fr_ee_link_name).pose.raw_pose
+
+        # controller state
+        state["controller"] = self.controller.get_state()
+
+        return state

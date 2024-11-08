@@ -2,6 +2,8 @@ import gymnasium as gym
 import numpy as np
 import mplib
 import sapien
+import torch
+import time
 
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.utils import gym_utils
@@ -15,7 +17,7 @@ from typing import List, Optional, Annotated, Union
 
 @dataclass
 class Args:
-    env_id: Annotated[str, tyro.conf.arg(aliases=["-e"])] = "TestTable-v1"
+    env_id: Annotated[str, tyro.conf.arg(aliases=["-e"])] = "Empty-v1"
     """The environment ID of the task you want to simulate"""
 
     obs_mode: Annotated[str, tyro.conf.arg(aliases=["-o"])] = "none"
@@ -107,55 +109,40 @@ def main(args: Args):
             viewer.paused = args.pause
         env.render()
 
-    # import pdb; pdb.set_trace()
-
-    # import pdb; pdb.set_trace()
-    # while True:
-    #     action = env.action_space.sample() if env.action_space is not None else None
-    #     obs, reward, terminated, truncated, info = env.step(action)
-    #     if verbose:
-    #         print("reward", reward)
-    #         print("terminated", terminated)
-    #         print("truncated", truncated)
-    #         print("info", info)
-    #     if args.render_mode is not None:
-    #         env.render()
-    #     if args.render_mode is None or args.render_mode != "human":
-    #         if (terminated | truncated).any():
-    #             break
-    # env.agent.robot.set_root_pose(Pose.create_from_pq([0, -0.65, 0], [1, 0, 0, 1]))
-    # import pdb; pdb.set_trace()
     planner = mplib.Planner(
         urdf=env.agent.urdf_path,
         srdf=env.agent.srdf_path,
         move_group=env.agent.ee_link_name
     )
-    arm_base_link = env.agent.robot.find_link_by_name(
-        env.agent.arm_base_link_name
-    )
-    arm_base_pose = arm_base_link.pose.raw_pose.numpy()[0]
-    planner.set_base_pose(arm_base_pose)
 
-    cube_pose = env.cube.pose.raw_pose
+    env.agent.robot.set_pose((sapien.Pose([0, -0.65, 0], [1, 0, 0, 1])))
+    robot_pose_in_world = [0,-0.65,0,1,0,0,1]
+    planner.set_base_pose(robot_pose_in_world)
 
-    # import pdb; pdb.set_trace()
+    gripper_qpos_err = set_gripper(0.045, env.agent, env)
+    print("Gripper qpos error", gripper_qpos_err)
 
-    # import pdb; pdb.set_trace()
-    target_pose = [*cube_pose.numpy()[0,:2], cube_pose[0, 2].item() + 0.3, 1, 0, 0, 0]
-    print("arm_pose", arm_base_pose)
-    print("target", target_pose)
+    pose = [-0.1,0,0.95,-0.5,0.5,-0.5,-0.5]
+    plan_to_pose(pose, planner, env.agent, env, gripper_target=0.045)
 
-    plan_to_pose(target_pose, planner, env.agent, env)
+    pose[2]-=0.03
+    plan_to_pose(pose, planner, env.agent, env, gripper_target=0.045)
+
+    set_gripper(0, env.agent, env)
+
+    pose[2]+=0.05
+    plan_to_pose(pose, planner, env.agent, env, gripper_target=0.)
 
     if record_dir:
         print(f"Saving video to {record_dir}")
 
-def plan_to_pose(pose, planner, agent, env):
-    qpos = []
-    for joint_name in agent.arm_joint_names:
-        qpos.append(agent.robot.find_joint_by_name(joint_name).qpos.squeeze())
-    # import pdb; pdb.set_trace()
-    
+    env.close()
+
+def plan_to_pose(pose, planner, agent, env, gripper_target=None):
+    robot_state = agent.get_state()
+
+    qpos = robot_state["fl_arm_qpos"][0].tolist()
+
     result = planner.plan_screw(
         target_pose=pose,
         qpos=qpos,
@@ -163,14 +150,46 @@ def plan_to_pose(pose, planner, agent, env):
         use_point_cloud=False,
         use_attach=False,
     )
+
+    if gripper_target is None:
+        gripper_target = agent.get_state()["fl_gripper_qpos"][0][0].numpy()
+    else:
+        gripper_target = np.array([gripper_target])
+
+    print("------")
     print("plan ",result["status"])
     if result["status"] == "Success":
         n_step = result["position"].shape[0]
         for i in range(n_step):
-            qf = agent.robot.compute_passive_force(
-                gravity=True, coriolis_and_centrifugal=True
-            )
-            agent.robot.set_qf(qf)
+            action = np.concatenate([
+                result["position"][i], result["velocity"][i], gripper_target
+                ], axis=-1)
+            action = torch.from_numpy(action).float().to(env.device)
+            _ = env.step(action.unsqueeze(0))
+
+            env.render()
+
+    print("[Target] EE pose", pose)
+    print("[Result] EE pose", agent.get_state()["fl_EE_pose"][0].tolist())
+
+def set_gripper(target, agent, env):
+    robot_state = agent.get_state()
+
+    qpos = robot_state["fl_arm_qpos"][0]
+    qvel = robot_state["fl_arm_qvel"][0]
+
+    gripper_target = torch.tensor([target]).float().to(env.device)
+
+    action = torch.concat([qpos, torch.zeros_like(qvel), gripper_target], dim=-1)
+    
+    _ = env.step(action.unsqueeze(0))
+
+    env.render()
+
+    print("------")
+    print("[Target] Gripper qpos", target)
+    print("[Result] Gripper qpos", agent.get_state()["fl_gripper_qpos"][0])
+    print("[Controller target] Gripper qpos", agent.controller.controllers['gripper']._target_qpos)
 
 
 if __name__ == "__main__":

@@ -15,7 +15,7 @@ from embodied_agent.third_party.vla.rdt.scripts.agilex_model import (
 )
 
 
-# TODO: currently, it do not support batched execution.
+# TODO: currently, it does not support batched execution.
 
 ALOHA_CAMERA_NAMES = [
     "cam_high", 

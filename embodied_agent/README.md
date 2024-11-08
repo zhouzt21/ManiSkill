@@ -18,7 +18,7 @@ pip install torch==2.1.0 torchvision==0.16.0  --index-url https://download.pytor
 
 PS: Refer to [this instruction](https://maniskill.readthedocs.io/en/latest/user_guide/getting_started/installation.html#troubleshooting) to fix vulkan.
 
-### 2. Install RDT (Robotics Diffsuion Transformer)
+### 2. Install RDT (Robotics Diffusion Transformer)
 
 1. Install dependencies 
 
@@ -63,7 +63,18 @@ ln -s /path/to/siglip-so400m-patch14-384 google/siglip-so400m-patch14-384
 In this repo, we also store the pretrained weights for RDT in the same dir
 
 - `RDT-1B`: [link](https://huggingface.co/robotics-diffusion-transformer/rdt-1b)🤗
+- `RDT-170M`: [link](https://huggingface.co/robotics-diffusion-transformer/rdt-170m)🤗
 
 ```bash
 ln -s /path/to/rdt-1b google/rdt-1b
+ln -s /path/to/rdt-170m google/rdt-170m
 ```
+
+## Demo
+
+After installation, you can run the following command to verify your installation which will save the episode into `video` folder in your current dir.
+
+```bash
+python -m embodied_agent.examples.demo_rdt --record_dir 'video' --render_mode sensors
+```
+

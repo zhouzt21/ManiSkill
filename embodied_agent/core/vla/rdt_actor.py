@@ -88,7 +88,7 @@ class RDTActor:
     
     @torch.no_grad()
     def encode_instruction(self, instr: str):
-        token = self.lang_tokenizer(
+        tokens = self.lang_tokenizer(
             instr, return_tensors="pt",
             padding="longest",
             truncation=True
@@ -128,7 +128,7 @@ class RDTActor:
 
     # RDT inference
     @torch.no_grad()
-    def infer(self, lang_instruction: str):
+    def infer(self):
         # fetch images in sequence [front, right, left]
         image_arrs = []
         for t in range(-self.n_frames, 0):
@@ -155,6 +155,8 @@ class RDTActor:
 
     def predict_action(self, obs: Dict, instr: str):
         if instr is not self.last_instruction:
+            print("[INFO] Instruction changed, re-encoding.")
+            print("[INFO] New instruction: ", instr)
             self.last_instruction = instr
             self.text_embedding = self.encode_instruction(instr)
 

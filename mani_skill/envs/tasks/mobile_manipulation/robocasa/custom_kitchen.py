@@ -28,6 +28,7 @@ from mani_skill.utils.scene_builder.robocasa.utils.scene_utils import ROBOCASA_A
 
 from mani_skill.envs.tasks.mobile_manipulation.robocasa.kitchen import RoboCasaKitchenEnv
 
+ROBOCASA_OBJAVERSE_DIR = ROBOCASA_ASSET_DIR / "objects/objaverse"
 
 @register_env(
     "RoboCasaCustomKitchen-v1", max_episode_steps=100, asset_download_ids=["RoboCasa"]
@@ -93,22 +94,151 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
     def _get_obj_cfgs(self):
         cfgs = []
         obj_model_path = os.path.join(
-            ROBOCASA_ASSET_DIR, "objects/objaverse/apple/apple_0/model.xml"
+            ROBOCASA_OBJAVERSE_DIR, "apple/apple_0/model.xml"
         )
-        cfgs.append({
-                "info":{"mjcf_path": obj_model_path,},
-                "type":None,
-                "name":"obj_apple",
-                "obj_groups":None,
-                "placement":dict(
-                        fixture='counter_main_main_group',# a class ? data[0]["fixture_cfgs"]["counter_main_main_group"]
+        # The name should in the scene. Else will return error.
+        cfgs.append(dict(
+                info = {"mjcf_path": obj_model_path,},
+                type = None,
+                name = "obj_apple_0",
+                obj_groups = None,
+                placement = dict(
+                        # ref get_fixtures(): fixture can be a class or an id string.
+                        fixture='counter_main_main_group',
                         sample_region_kwargs=dict(
                             ref='counter_main_main_group',
                         ),
-                        size=(0.35, 0.2),#use[] instead of()?
+                        size=(0.35, 0.2),
                         pos=("ref", -1.0),
                         rotation=[0,0] 
                         ),
-                }   
+                ) 
             )
+        
+
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "bowl/bowl_1/model.xml"
+        )
+        cfgs.append(dict(
+                info = {"mjcf_path": obj_model_path,},
+                type = None,
+                name = "obj_bowl",
+                obj_groups = None,
+                placement = dict(
+                        # ref get_fixtures(): fixture can be a class or an id string.
+                        fixture='counter_1_right_group',
+                        sample_region_kwargs=dict(
+                            ref='paper_towel_right_group',
+                            loc="left_right",
+                        ),
+                        size=(0.35, 0.2),
+                        pos=(0.0, 0.0),
+                        offset=(0.5, 0.0),
+                        rotation=[0,0] 
+                        ),
+                ) 
+            )
+        
+
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "apple/apple_10/model.xml"
+        )
+        # The name should in the scene. Else will return error.
+        cfgs.append(dict(
+                info = {"mjcf_path": obj_model_path,},
+                type = None,
+                name = "obj_apple_10",
+                obj_groups = None,
+                placement = dict(
+                        # ref get_fixtures(): fixture can be a class or an id string.
+                        fixture='counter_1_right_group',
+                        sample_region_kwargs=dict(
+                            ref='paper_towel_right_group',
+                            loc="left_right",
+                        ),
+                        size=(0.35, 0.2),
+                        pos=(0.0, 0.0),
+                        offset=(0.8, 0.05),
+                        rotation=[0,0] 
+                        ),
+                ) 
+            )
+        
+
+
+
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "banana/banana_1/model.xml"
+        )
+        # The name should in the scene. Else will return error.
+        cfgs.append(dict(
+                info = {"mjcf_path": obj_model_path,},
+                type = None,
+                name = "obj_banana_1",
+                obj_groups = None,
+                placement = dict(
+                        # ref get_fixtures(): fixture can be a class or an id string.
+                        fixture='counter_1_right_group',
+                        sample_region_kwargs=dict(
+                            ref='paper_towel_right_group',
+                            loc="left_right",
+                        ),
+                        size=(0.35, 0.2),
+                        pos=(0.0, 0.0),
+                        offset=(1.0, -0.03),
+                        rotation=[0,0] 
+                        ),
+                ) 
+            )
+        
+
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "carrot/carrot_1/model.xml"
+        )
+        # The name should in the scene. Else will return error.
+        cfgs.append(dict(
+                info = {"mjcf_path": obj_model_path,},
+                type = None,
+                name = "obj_carrot_1",
+                obj_groups = None,
+                placement = dict(
+                        # ref get_fixtures(): fixture can be a class or an id string.
+                        fixture='counter_1_right_group',
+                        sample_region_kwargs=dict(
+                            ref='paper_towel_right_group',
+                            loc="left_right",
+                        ),
+                        size=(0.35, 0.2),
+                        pos=(0.0, 0.0),
+                        offset=(0.6, -0.034),
+                        rotation=[-0.1,0.1] 
+                        ),
+                ) 
+            )
+        
+
+        obj_model_path = os.path.join(
+            ROBOCASA_OBJAVERSE_DIR, "milk/milk_1/model.xml"
+        )
+        # The name should in the scene. Else will return error.
+        cfgs.append(dict(
+                info = {"mjcf_path": obj_model_path,},
+                type = None,
+                name = "obj_milk_1",
+                obj_groups = None,
+                placement = dict(
+                        # ref get_fixtures(): fixture can be a class or an id string.
+                        fixture='counter_1_right_group',
+                        sample_region_kwargs=dict(
+                            ref='counter_1_right_group',
+                            loc="left_right",
+                        ),
+                        size=(0.35, 0.2),
+                        pos=(0.0, 0.0),
+                        offset=(0.9, 0.04),
+                        rotation=[-0.1,0.1] 
+                        ),
+                ) 
+            )
+
         return cfgs

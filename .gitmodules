@@ -1,0 +1,3 @@
+[submodule "embodied_agent/third_party/vla/rdt"]
+	path = embodied_agent/third_party/vla/rdt
+	url = git@github.com:gen-robot/RoboticsDiffusionTransformer.git

@@ -20,7 +20,7 @@ setup(
     long_description_content_type="text/markdown",
     author="ManiSkill contributors",
     url="https://github.com/haosulab/ManiSkill",
-    packages=find_packages(include=["mani_skill*"]),
+    packages=find_packages(include=["mani_skill*", "embodied_agent"]),
     python_requires=">=3.9",
     setup_requires=["setuptools>=62.3.0"],
     install_requires=[
@@ -44,7 +44,7 @@ setup(
         "pytorch_kinematics==0.7.4",
         "pynvml",  # gpu monitoring
         "tyro>=0.8.5",  # nice, typed, command line arg parser
-        "huggingface_hub",  # we use HF to version control some assets/datasets more easily
+        "huggingface_hub==0.25.2",  # we use HF to version control some assets/datasets more easily
     ],
     # Glob patterns do not automatically match dotfiles
     package_data={

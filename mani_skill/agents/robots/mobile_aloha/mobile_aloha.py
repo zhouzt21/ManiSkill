@@ -19,6 +19,9 @@ from mani_skill.utils.structs.link import Link
 from mani_skill.utils.structs.types import Array
 
 
+# FIXME: EE control is not ready!!!
+
+
 @register_agent()
 class MobileAloha(BaseAgent):
     uid = "mobile_aloha"
@@ -214,7 +217,7 @@ class MobileAloha(BaseAgent):
             upper=0.1,
             stiffness=self.joint_stiffness,
             damping=self.joint_damping,
-            use_delta=False, #True,
+            use_delta=True,
         )
 
         # -------------------------------------------------------------------------- #
@@ -260,6 +263,28 @@ class MobileAloha(BaseAgent):
 
         # Make a deepcopy in case users modify any config
         return deepcopy_dict(controller_configs)
+    
+    def get_proprioception(self):
+        """
+        Get the proprioceptive state of the agent, default is the qpos and qvel of the robot and any controller state.
+        """
+        qpos = []
+        qvel = []
+        for ctrl_name, ctrl in self.controller.controllers.items():
+            if 'arm' in ctrl_name:
+                qpos.append(ctrl.qpos)
+                qvel.append(ctrl.qvel)
+            elif 'gripper' in ctrl_name:
+                qpos.append(ctrl.qpos[..., :1])
+                qvel.append(ctrl.qvel[..., :1])
+            else:
+                import pdb; pdb.set_trace()
+
+        qpos = torch.concat(qpos, dim=-1)
+        qvel = torch.concat(qvel, dim=-1)
+        obs = dict(qpos=qpos, qvel=qvel)
+
+        return obs
 
     def _after_init(self):
         return super()._after_init()

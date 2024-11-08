@@ -40,9 +40,13 @@ class RDTActor:
                  ctrl_freq: int=25, 
                  camera_names: List[str]=None, 
                  model_cfg_path: str=None,
+                 use_actions_interpolation: bool=False,
                  device: str='cuda'):
         self.ctrl_freq = ctrl_freq
         self.device = device
+
+        self.use_actions_interpolation = use_actions_interpolation
+
         self.model_cfg_path = RDT_DEFAULT_CONFIG if model_cfg_path is None else model_cfg_path
 
         self.obs_window = None
@@ -62,6 +66,14 @@ class RDTActor:
 
         self.last_instruction = None
         self.action_buffer = None
+        self.internal_t = 0
+
+    def reset(self):
+        self.obs_window = None
+        self.lang_embeddings = None
+        self.last_instruction = None
+        self.action_buffer = None
+        self.internal_t = 0
 
     def make_policy(self):
         model = create_RDT_model(
@@ -155,16 +167,24 @@ class RDTActor:
 
     def predict_action(self, obs: Dict, instr: str):
         if instr is not self.last_instruction:
-            print("[INFO] Instruction changed, re-encoding.")
+            print("[INFO] Instruction changed, re-encoding language and re-compute actions.")
             print("[INFO] New instruction: ", instr)
+            self.internal_t = 0
             self.last_instruction = instr
             self.text_embedding = self.encode_instruction(instr)
 
         self.update_obs_window(
             dict_apply(obs, lambda x: torch.squeeze(x, dim=0)))
-        actions = self.infer()
 
-        return actions
+        if self.internal_t % self.action_chunk_size == 0:
+            self.action_buffer = self.infer().squeeze(0).cpu().numpy()
+
+        raw_action = self.action_buffer[self.internal_t % self.action_chunk_size]
+        self.internal_t += 1
+
+        action = raw_action.copy()
+
+        return action
 
 
         

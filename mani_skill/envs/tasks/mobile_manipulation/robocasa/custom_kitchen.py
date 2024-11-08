@@ -91,6 +91,9 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         all_kwargs.update(kwargs)
         super().__init__(*args, **all_kwargs)
 
+    def get_task_description(self):
+        return "put the apple in the bowl"
+
     def _get_obj_cfgs(self):
         cfgs = []
         obj_model_path = os.path.join(

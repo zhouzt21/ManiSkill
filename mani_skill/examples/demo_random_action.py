@@ -98,7 +98,7 @@ def main(args: Args):
 
     obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=False))
     if args.seed is not None and env.action_space is not None:
-            env.action_space.seed(args.seed[0])
+        env.action_space.seed(args.seed[0])
     if args.render_mode is not None:
         viewer = env.render()
         if isinstance(viewer, sapien.utils.Viewer):

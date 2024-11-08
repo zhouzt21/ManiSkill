@@ -79,7 +79,8 @@ class RDTActor:
         model = create_RDT_model(
             args=self.config,
             dtype=torch.bfloat16,
-            pretrained=RDT1B_PATH,
+            # pretrained=RDT1B_PATH,
+            pretrained=RDT170M_PATH,
             pretrained_vision_encoder_name_or_path=SIGLIP_PATH,
             control_frequency=self.ctrl_freq
         )

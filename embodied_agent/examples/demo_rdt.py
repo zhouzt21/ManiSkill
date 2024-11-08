@@ -98,7 +98,7 @@ def main(args: Args):
             print("Control mode", env.unwrapped.control_mode)
         print("Reward mode", env.unwrapped.reward_mode)
 
-    obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=True))
+    obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=False))
     if args.seed is not None and env.action_space is not None:
         env.action_space.seed(args.seed[0])
     if args.render_mode is not None:
@@ -108,10 +108,16 @@ def main(args: Args):
         env.render()
 
     actor = RDTActor()
-    # import pdb; pdb.set_trace()
-    actions = actor.predict_action(obs, instr="this is a test message to debug")
-
-    print(actions)
+    instruction = env.get_task_description()
+    
+    for i in range(1000):
+        action = actor.predict_action(obs, instr=instruction)
+        obs, reward, terminated, truncated, info = env.step(action)
+        if args.render_mode is not None:
+            env.render()
+        if args.render_mode is None or args.render_mode != "human":
+            if (terminated | truncated).any():
+                break
 
     env.close()
 

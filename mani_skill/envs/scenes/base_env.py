@@ -6,7 +6,7 @@ import sapien.physx as physx
 import torch
 from sapien import Pose
 
-from mani_skill.agents.robots import Fetch, Panda
+from mani_skill.agents.robots import Fetch, Panda, MobileAloha
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.sensors.camera import CameraConfig
 from mani_skill.utils import sapien_utils
@@ -38,7 +38,7 @@ class SceneManipulationEnv(BaseEnv):
     """
 
     SUPPORTED_ROBOTS = ["panda", "fetch", "mobile_aloha"]
-    agent: Union[Panda, Fetch]
+    agent: Union[Panda, Fetch, MobileAloha]
 
     def __init__(
         self,

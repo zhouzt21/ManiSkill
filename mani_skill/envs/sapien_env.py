@@ -352,6 +352,10 @@ class BaseEnv(gym.Env):
         self.single_observation_space
         self.observation_space
 
+    def get_task_description(self) -> str:
+        """Get the task description"""
+        return ""
+
     def update_obs_space(self, obs: torch.Tensor):
         """A convenient function to auto generate observation spaces if you modify them.
         Call this function if you modify the observations returned by env.step and env.reset via an observation wrapper.

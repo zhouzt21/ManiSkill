@@ -31,18 +31,8 @@ class MobileAloha(BaseAgent):
     @property
     def _sensor_configs(self):
         return [
-            # CameraConfig(
-            #     uid="mobile_aloha_base",
-            #     pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
-            #     width=128,
-            #     height=128,
-            #     fov=2,
-            #     near=0.01,
-            #     far=100,
-            #     entity_uid="camera_base_link",
-            # ),
             CameraConfig(
-                uid="mobile_aloha_base_low_camera",
+                uid="cam_low",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
                 width=128,
                 height=128,
@@ -52,7 +42,7 @@ class MobileAloha(BaseAgent):
                 entity_uid="camera_link1",
             ),
             CameraConfig(
-                uid="mobile_aloha_base_high_camera",
+                uid="cam_high",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
                 width=128,
                 height=128,
@@ -62,7 +52,7 @@ class MobileAloha(BaseAgent):
                 entity_uid="camera_link2",
             ),
             CameraConfig(
-                uid="mobile_aloha_left_camera",
+                uid="cam_left_wrist",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
                 width=128,
                 height=128,
@@ -72,7 +62,7 @@ class MobileAloha(BaseAgent):
                 entity_uid="left_camera",
             ),
             CameraConfig(
-                uid="mobile_aloha_right_camera",
+                uid="cam_right_wrist",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
                 width=128,
                 height=128,
@@ -251,12 +241,12 @@ class MobileAloha(BaseAgent):
             )
 
             controller_configs["bi_" + control_mode] = dict(
-                arm1=config_fn(**kwargs1),
-                gripper1=gripper_pd_joint_pos_fn(
+                arm_left=config_fn(**kwargs1),
+                gripper_left=gripper_pd_joint_pos_fn(
                     joint_names=self.fl_gripper_joint_names
                 ),
-                arm2=config_fn(**kwargs2),
-                gripper2=gripper_pd_joint_pos_fn(
+                arm_right=config_fn(**kwargs2),
+                gripper_right=gripper_pd_joint_pos_fn(
                     joint_names=self.fr_gripper_joint_names
                 )
             )
@@ -268,21 +258,34 @@ class MobileAloha(BaseAgent):
         """
         Get the proprioceptive state of the agent, default is the qpos and qvel of the robot and any controller state.
         """
-        qpos = []
-        qvel = []
-        for ctrl_name, ctrl in self.controller.controllers.items():
-            if 'arm' in ctrl_name:
-                qpos.append(ctrl.qpos)
-                qvel.append(ctrl.qvel)
-            elif 'gripper' in ctrl_name:
-                qpos.append(ctrl.qpos[..., :1])
-                qvel.append(ctrl.qvel[..., :1])
-            else:
-                import pdb; pdb.set_trace()
+        if 'bi' in self.control_mode:
+            qpos_arm_l = self.controller.controllers['arm_left'].qpos
+            qvel_arm_l = self.controller.controllers['arm_left'].qvel
+            qpos_gripper_l = self.controller.controllers['gripper_left'].qpos[..., :1]
+            qvel_gripper_l = self.controller.controllers['gripper_left'].qvel[..., :1]
+            
+            qpos_arm_r = self.controller.controllers['arm_right'].qpos
+            qvel_arm_r = self.controller.controllers['arm_right'].qvel
+            qpos_gripper_r = self.controller.controllers['gripper_right'].qpos[..., :1]
+            qvel_gripper_r = self.controller.controllers['gripper_right'].qvel[..., :1]
 
-        qpos = torch.concat(qpos, dim=-1)
-        qvel = torch.concat(qvel, dim=-1)
-        obs = dict(qpos=qpos, qvel=qvel)
+            qpos_l = torch.concat([qpos_arm_l, qpos_gripper_l], dim=-1)
+            qvel_l = torch.concat([qvel_arm_l, qvel_gripper_l], dim=-1)
+            qpos_r = torch.concat([qpos_arm_r, qpos_gripper_r], dim=-1)
+            qvel_r = torch.concat([qvel_arm_r, qvel_gripper_r], dim=-1)
+
+            obs = dict(qpos_l=qpos_l, qvel_l=qvel_l, qpos_r=qpos_r, qvel_r=qvel_r)
+
+        else:
+            qpos_arm = self.controller.controllers['arm'].qpos
+            qvel_arm = self.controller.controllers['arm'].qvel
+            qpos_gripper = self.controller.controllers['gripper'].qpos[..., :1]
+            qvel_gripper = self.controller.controllers['gripper'].qvel[..., :1]
+
+            qpos = torch.concat([qpos_arm, qpos_gripper], dim=-1)
+            qvel = torch.concat([qvel_arm, qvel_gripper], dim=-1)
+
+            obs = dict(qpos=qpos, qvel=qvel)
 
         return obs
 

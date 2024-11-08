@@ -109,7 +109,7 @@ def main(args: Args):
 
     actor = RDTActor()
     # import pdb; pdb.set_trace()
-    actions = actor.predict_action(obs)
+    actions = actor.predict_action(obs, instr="this is a test message to debug")
 
     print(actions)
 

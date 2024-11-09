@@ -101,49 +101,70 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
 
             info(dict): include the "mjcf_path"
 
-                    mjcf_path(str): the path of obj/model.xml
+                mjcf_path(str): the path of obj/model.xml
 
             name(str): define the name of object,
             
             type: None ? 
             
             obj_groups: None ?
+
+            exclude_obj_groups(list): ?  eg: exclude_obj_groups = ["plate", "pan", "vegetable"]
             
+            [optional] eg: washable(bool) = True, graspable(bool),...
+
+            max_size(tuple with 3 elements): max_size is used to specify the maximum size limits of an object in three dimensions,
+                ensuring that the object can fit into a specific placement area or container in simulation or robotic operations.
+                By setting max_size, it helps prevent placement failure or collision issues caused by the object being too large.
+                eg: max_size=(0.35, 0.45, None), or =(None, None, 0.10),
+                max_size = (x_max, y_max, z_max), max_size for object not the ref. None represents there is no limit in
+                this dimension.
+
+
             placement: 
 
                 fixture(str or ClassType): find in the scene_data["fixtures"], ref get_fixtures(): 
-                                            fixture can be a class or an id string. If not using ref,
-                                            the pos is base on fixture's pos.
-                                            [Note] fixture should in the scene, otherwise it will return error.
+                    fixture can be a class or an id string. If not using ref,
+                    the pos is base on fixture's pos.
+                    [Note] fixture should in the scene, otherwise it will return error.
                                             
-                sample_region_kwargs(dict): When we want to place an object at a specific location,there are usually some positional constraints, 
-                                            meaning the object cannot be placed anywhere, but must be placed within a specific area.
-                                            This area is called the sampling region. The sampling region is usually determined based on the position, size, and other scene conditions of the reference object.
+                sample_region_kwargs(dict optional): When we want to place an object at a specific location,there are usually some positional constraints, 
+                    meaning the object cannot be placed anywhere, but must be placed within a specific area.
+                    This area is called the sampling region. The sampling region is usually determined based on the position, size, and other scene conditions of the reference object.
                 
-                        ref (str or ClassType): reference fixture(like fixture above) used in determining sampling location.
+                    ref (str or ClassType): reference fixture(like fixture above) used in determining sampling location.
 
-                        loc (str): sampling method, one of ["nn", "left", "right", "left_right", "any"]
-                                    nn: chooses the closest top geom to the reference fixture
-                                    left: chooses the any top geom within 0.3 distance of the left side of the reference fixture
-                                    right: chooses the any top geom within 0.3 distance of the right side of the reference fixture
-                                    left_right: chooses the any top geom within 0.3 distance of the left or right side of the reference fixture
-                                    any: chooses any top geom
+                    loc (str): sampling method, one of ["nn", "left", "right", "left_right", "any"]
+                        nn: chooses the closest top geom to the reference fixture
+                        left: chooses the any top geom within 0.3 distance of the left side of the reference fixture
+                        right: chooses the any top geom within 0.3 distance of the right side of the reference fixture
+                        left_right: chooses the any top geom within 0.3 distance of the left or right side of the reference fixture
+                        any: chooses any top geom
 
-                        top_size (tuple): minimum size of the top region to return
+                    top_size (tuple): minimum size of the top region to return
+                            make sure sampled counter region is large enough to place the object
+
 
                 size(tuple with 2 elements): (width, hegiht):This indicates the minimum size requirement for the placement area is (0.2, 0.2), 
-                                                meaning that the width and height of the area must be at least 0.2. 
-                                                It doesn't mean the object is that size.
+                    meaning that the width and height of the area must be at least 0.2. It doesn't mean the object is that size.
 
                 pos(tuple with 2 elements): (x_m, y_m) the distance away from the ref. If 'ref' is not set, the pos is relative to the fixture.
-                                            the first element can be 'ref',representing the x-distance relative to 'ref', and pos[1] represents the offset in the y-direction. 
+                    the first element can be 'ref',representing the x-distance relative to 'ref', and pos[1] represents the offset in the y-direction. 
 
-                offset(tuple with 2 elements): (x_m,y_m) on the basis of pos, if you want to offset the x-coordinate relative to 'ref', you need to add an offset and set 'ref' on the x-axis.
+                offset(tuple with 2 elements): (x_m,y_m) on the basis of pos. It add more flexibility.
+                    if you want to offset the x-coordinate relative to 'ref', you need to add an offset and set 'ref' on the x-axis.
+
+                rotation(list/tuple with 2 elements): eg: rotation=[(-3 * np.pi / 8, -np.pi / 4), (np.pi / 4, 3 * np.pi / 8)],
+                    eg: rotation=(2 * np.pi / 8, 3 * np.pi / 8); rotation=np.pi / 2,
+                
+                ensure_object_boundary_in_range(bool): ? usually False
+
+                try_to_place_in(str eg: "tray","container","cutting_board"): ?
 
 
-                [Note]: Both pos and offset can be set, but it seems that offset provides more flexibility in placing the object. Sometimes, the placed position may not match the actual position, which might be related to collisions.
-
-                What's the difference between pos and offset? 
+                [Note]: Both pos and offset can be set, but it seems that offset provides more flexibility in placing the object.
+                    Sometimes, the placed position may not match the actual position, which might be related to collisions.
+                    Z is excluded for it is height.
 
         Returns:
             Cfgs: give object info to env to create objects.
@@ -152,7 +173,8 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "apple/apple_0/model.xml"
         )
-        cfgs.append(dict(
+        cfgs.append(
+            dict(
                 info = {"mjcf_path": obj_model_path,},
                 type = None,
                 name = "obj_apple_0",
@@ -163,8 +185,8 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                             ref='knife_block_main_group',
                         ),
                         size=(0.2, 0.2),
-                        pos=('ref',-0.2),# x y exclude z(height)
-                        offset=(0.5, 0),# x y exclude z(height)
+                        pos=('ref',-0.2),
+                        offset=(0.5, 0),
                         rotation=(0,0)
                         ),
                 ) 

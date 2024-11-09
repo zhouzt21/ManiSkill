@@ -96,7 +96,9 @@ def main(args: Args):
             print("Control mode", env.unwrapped.control_mode)
         print("Reward mode", env.unwrapped.reward_mode)
 
-    obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=False))
+    # import pdb;pdb.set_trace()
+    # obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=True))
+    obs, _ = env.reset(seed=[x + 2022 for x in args.seed], options=dict(reconfigure=True))
     if args.seed is not None and env.action_space is not None:
         env.action_space.seed(args.seed[0])
     if args.render_mode is not None:

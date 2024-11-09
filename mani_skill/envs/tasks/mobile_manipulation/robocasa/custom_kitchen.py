@@ -4,7 +4,6 @@ from typing import Dict
 import numpy as np
 import sapien
 import torch
-# import robocasa  #can be replaced by other
 import os
 
 from mani_skill.utils.scene_builder.robocasa.scene_builder import FIXTURES,FIXTURES_INTERIOR
@@ -105,13 +104,21 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
 
             name(str): define the name of object,
             
-            type: None ? 
+            type(str): "object" or "fxiture"(not use in object)
             
-            obj_groups: None ?
+            obj_groups(list or str): groups to sample from or the exact xml path of the object to spawn -> helps you to find the xml.
 
-            exclude_obj_groups(list): ?  eg: exclude_obj_groups = ["plate", "pan", "vegetable"]
+            exclude_obj_groups(str or list): groups to exclude  eg: exclude_obj_groups = ["plate", "pan", "vegetable"]
             
-            [optional] eg: washable(bool) = True, graspable(bool),...
+            [optional]graspable (bool): whether the sampled object must be graspable
+
+            [optional]washable (bool): whether the sampled object must be washable
+
+            [optional]microwavable (bool): whether the sampled object must be microwavable
+
+            [optional]cookable (bool): whether whether the sampled object must be cookable
+
+            [optional]freezable (bool): whether whether the sampled object must be freezable
 
             max_size(tuple with 3 elements): max_size is used to specify the maximum size limits of an object in three dimensions,
                 ensuring that the object can fit into a specific placement area or container in simulation or robotic operations.
@@ -138,7 +145,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                         nn: chooses the closest top geom to the reference fixture
                         left: chooses the any top geom within 0.3 distance of the left side of the reference fixture
                         right: chooses the any top geom within 0.3 distance of the right side of the reference fixture
-                        left_right: chooses the any top geom within 0.3 distance of the left or right side of the reference fixture
+                        left_right: chooses the any top geom within 0.3 distance of the left or right side of the reference fixture, random choose or meet some condition
                         any: chooses any top geom
 
                     top_size (tuple): minimum size of the top region to return
@@ -159,6 +166,10 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                 
                 ensure_object_boundary_in_range(bool): ? usually False
 
+                ensure_object_in_region(bool): ?
+
+                ensure_valid_placement(bool): ?
+
                 try_to_place_in(str eg: "tray","container","cutting_board"): ?
 
 
@@ -176,7 +187,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         cfgs.append(
             dict(
                 info = {"mjcf_path": obj_model_path,},
-                type = None,
+                type = "object",
                 name = "obj_apple_0",
                 obj_groups = None,
                 placement = dict(
@@ -197,7 +208,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         )
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
-                type = None,
+                type = "object",
                 name = "obj_bowl",
                 obj_groups = None,
                 placement = dict(
@@ -220,7 +231,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         )
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
-                type = None,
+                type = "object",
                 name = "obj_apple_10",
                 obj_groups = None,
                 placement = dict(
@@ -238,13 +249,12 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
             )
         
 
-
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "banana/banana_1/model.xml"
         )
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
-                type = None,
+                type = "object",
                 name = "obj_banana_1",
                 obj_groups = None,
                 placement = dict(
@@ -267,7 +277,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         )
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
-                type = None,
+                type = "object",
                 name = "obj_carrot_1",
                 obj_groups = None,
                 placement = dict(
@@ -290,7 +300,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         )
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
-                type = None,
+                type = "object",
                 name = "obj_milk_1",
                 obj_groups = None,
                 placement = dict(

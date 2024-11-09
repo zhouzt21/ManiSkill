@@ -311,6 +311,7 @@ def sample_kitchen_object_helper(
 
     # option to spawn specific object instead of sampling from a group
     if isinstance(groups, str) and groups.endswith(".xml"):
+        # import pdb;pdb.set_trace()
         mjcf_path = groups
         # reverse look up mjcf_path to category
         mjcf_kwargs = dict()

@@ -332,6 +332,7 @@ class BaseEnv(gym.Env):
         self._elapsed_steps = (
             torch.zeros(self.num_envs, device=self.device, dtype=torch.int32)
         )
+        # import pdb;pdb.set_trace()
         obs, _ = self.reset(seed=[2022 + i for i in range(self.num_envs)], options=dict(reconfigure=True))
 
         self._init_raw_obs = common.to_cpu_tensor(obs)

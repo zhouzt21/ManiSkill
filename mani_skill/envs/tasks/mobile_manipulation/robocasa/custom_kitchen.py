@@ -96,28 +96,79 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
 
     def _get_obj_cfgs(self):
         cfgs = []
+        """
+        Cfgs:
+
+            info(dict): include the "mjcf_path"
+
+                    mjcf_path(str): the path of obj/model.xml
+
+            name(str): define the name of object,
+            
+            type: None ? 
+            
+            obj_groups: None ?
+            
+            placement: 
+
+                fixture(str or ClassType): find in the scene_data["fixtures"], ref get_fixtures(): 
+                                            fixture can be a class or an id string. If not using ref,
+                                            the pos is base on fixture's pos.
+                                            [Note] fixture should in the scene, otherwise it will return error.
+                                            
+                sample_region_kwargs(dict): When we want to place an object at a specific location,there are usually some positional constraints, 
+                                            meaning the object cannot be placed anywhere, but must be placed within a specific area.
+                                            This area is called the sampling region. The sampling region is usually determined based on the position, size, and other scene conditions of the reference object.
+                
+                        ref (str or ClassType): reference fixture(like fixture above) used in determining sampling location.
+
+                        loc (str): sampling method, one of ["nn", "left", "right", "left_right", "any"]
+                                    nn: chooses the closest top geom to the reference fixture
+                                    left: chooses the any top geom within 0.3 distance of the left side of the reference fixture
+                                    right: chooses the any top geom within 0.3 distance of the right side of the reference fixture
+                                    left_right: chooses the any top geom within 0.3 distance of the left or right side of the reference fixture
+                                    any: chooses any top geom
+
+                        top_size (tuple): minimum size of the top region to return
+
+                size(tuple with 2 elements): (width, hegiht):This indicates the minimum size requirement for the placement area is (0.2, 0.2), 
+                                                meaning that the width and height of the area must be at least 0.2. 
+                                                It doesn't mean the object is that size.
+
+                pos(tuple with 2 elements): (x_m, y_m) the distance away from the ref. If 'ref' is not set, the pos is relative to the fixture.
+                                            the first element can be 'ref',representing the x-distance relative to 'ref', and pos[1] represents the offset in the y-direction. 
+
+                offset(tuple with 2 elements): (x_m,y_m) on the basis of pos, if you want to offset the x-coordinate relative to 'ref', you need to add an offset and set 'ref' on the x-axis.
+
+
+                [Note]: Both pos and offset can be set, but it seems that offset provides more flexibility in placing the object. Sometimes, the placed position may not match the actual position, which might be related to collisions.
+
+                What's the difference between pos and offset? 
+
+        Returns:
+            Cfgs: give object info to env to create objects.
+        """
+
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "apple/apple_0/model.xml"
         )
-        # The name should in the scene. Else will return error.
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
                 type = None,
                 name = "obj_apple_0",
                 obj_groups = None,
                 placement = dict(
-                        # ref get_fixtures(): fixture can be a class or an id string.
                         fixture='counter_main_main_group',
                         sample_region_kwargs=dict(
-                            ref='counter_main_main_group',
+                            ref='knife_block_main_group',
                         ),
-                        size=(0.35, 0.2),
-                        pos=("ref", -1.0),
-                        rotation=[0,0] 
+                        size=(0.2, 0.2),
+                        pos=('ref',-0.2),# x y exclude z(height)
+                        offset=(0.5, 0),# x y exclude z(height)
+                        rotation=(0,0)
                         ),
                 ) 
             )
-        
 
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "bowl/bowl_1/model.xml"
@@ -128,7 +179,6 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                 name = "obj_bowl",
                 obj_groups = None,
                 placement = dict(
-                        # ref get_fixtures(): fixture can be a class or an id string.
                         fixture='counter_1_right_group',
                         sample_region_kwargs=dict(
                             ref='paper_towel_right_group',
@@ -137,7 +187,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                         size=(0.35, 0.2),
                         pos=(0.0, 0.0),
                         offset=(0.5, 0.0),
-                        rotation=[0,0] 
+                        rotation=(0,0)
                         ),
                 ) 
             )
@@ -146,14 +196,12 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "apple/apple_10/model.xml"
         )
-        # The name should in the scene. Else will return error.
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
                 type = None,
                 name = "obj_apple_10",
                 obj_groups = None,
                 placement = dict(
-                        # ref get_fixtures(): fixture can be a class or an id string.
                         fixture='counter_1_right_group',
                         sample_region_kwargs=dict(
                             ref='paper_towel_right_group',
@@ -162,25 +210,22 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                         size=(0.35, 0.2),
                         pos=(0.0, 0.0),
                         offset=(0.8, 0.05),
-                        rotation=[0,0] 
+                        rotation=(0,0)
                         ),
                 ) 
             )
         
 
 
-
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "banana/banana_1/model.xml"
         )
-        # The name should in the scene. Else will return error.
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
                 type = None,
                 name = "obj_banana_1",
                 obj_groups = None,
                 placement = dict(
-                        # ref get_fixtures(): fixture can be a class or an id string.
                         fixture='counter_1_right_group',
                         sample_region_kwargs=dict(
                             ref='paper_towel_right_group',
@@ -189,7 +234,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                         size=(0.35, 0.2),
                         pos=(0.0, 0.0),
                         offset=(1.0, -0.03),
-                        rotation=[0,0] 
+                        rotation=(0,0) 
                         ),
                 ) 
             )
@@ -198,14 +243,12 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "carrot/carrot_1/model.xml"
         )
-        # The name should in the scene. Else will return error.
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
                 type = None,
                 name = "obj_carrot_1",
                 obj_groups = None,
                 placement = dict(
-                        # ref get_fixtures(): fixture can be a class or an id string.
                         fixture='counter_1_right_group',
                         sample_region_kwargs=dict(
                             ref='paper_towel_right_group',
@@ -214,7 +257,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
                         size=(0.35, 0.2),
                         pos=(0.0, 0.0),
                         offset=(0.6, -0.034),
-                        rotation=[-0.1,0.1] 
+                        rotation=(-0.1,0.1)
                         ),
                 ) 
             )
@@ -223,14 +266,12 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "milk/milk_1/model.xml"
         )
-        # The name should in the scene. Else will return error.
         cfgs.append(dict(
                 info = {"mjcf_path": obj_model_path,},
                 type = None,
                 name = "obj_milk_1",
                 obj_groups = None,
                 placement = dict(
-                        # ref get_fixtures(): fixture can be a class or an id string.
                         fixture='counter_1_right_group',
                         sample_region_kwargs=dict(
                             ref='counter_1_right_group',

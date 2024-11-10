@@ -7,6 +7,7 @@ import torch
 import os
 
 from mani_skill.utils.scene_builder.robocasa.scene_builder import FIXTURES,FIXTURES_INTERIOR
+from mani_skill.utils.scene_builder.robocasa.fixtures.fixture import FixtureType, Fixture
 
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.sensors.camera import CameraConfig
@@ -92,6 +93,68 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
 
     def get_task_description(self):
         return "put the apple in the bowl"
+
+    # copy from robocasa, can not be used in maniskill
+    def get_ep_meta(self):
+        """
+        Returns a dictionary containing episode meta data
+        """
+
+        def copy_dict_for_json(orig_dict):
+            new_dict = {}
+            for (k, v) in orig_dict.items():
+                if isinstance(v, dict):
+                    new_dict[k] = copy_dict_for_json(v)
+                elif isinstance(v, Fixture):
+                    new_dict[k] = v.name
+                else:
+                    new_dict[k] = v
+            return new_dict
+
+        ep_meta = super().get_ep_meta()
+        ep_meta["layout_id"] = self.layout_id
+        ep_meta["style_id"] = self.style_id
+        ep_meta["object_cfgs"] = [copy_dict_for_json(cfg) for cfg in self.object_cfgs]
+        ep_meta["fixtures"] = {
+            k: {"cls": v.__class__.__name__} for (k, v) in self.fixtures.items()
+        }
+        ep_meta["gen_textures"] = self._curr_gen_fixtures or {}
+        ep_meta["lang"] = ""
+
+        ep_meta["fixture_refs"] = dict(
+            {k: v.name for (k, v) in self.fixture_refs.items()}
+        )
+        ep_meta["cam_configs"] = deepcopy(self._cam_configs)
+
+        return ep_meta
+
+
+    # can be used for create objects.
+    def _setup_kitchen_references(self):
+        """
+        setup fixtures (and their references). this function is called within load_model function for kitchens
+        """
+        # serialized_refs = self._ep_meta.get("fixture_refs", {})
+        serialized_refs = {
+            "counter" : {
+                "id" : FixtureType.COUNTER, 
+                "ref" : None, 
+                "size" : (1.0, 0.4)
+            },
+
+            "sink" : {
+                "id" : FixtureType.SINK, 
+                "ref" : None, 
+                "size" : (0.8, 0.5)
+            },
+        }
+        self.fixture_refs[self._scene_idx_to_be_loaded] = {
+            k: self.scene_builder.get_fixture(
+                self.scene_builder.scene_data[self._scene_idx_to_be_loaded]["fixtures"],
+                **v,
+            )
+            for (k, v) in serialized_refs.items()
+        }
 
     def _get_obj_cfgs(self):
         cfgs = []
@@ -180,6 +243,29 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         Returns:
             Cfgs: give object info to env to create objects.
         """
+
+        # obj_model_path = os.path.join(
+        #     ROBOCASA_OBJAVERSE_DIR, "apple/apple_0/model.xml"
+        # )
+        # for index in range(self.num_envs):
+        #     cfgs.append(
+        #         dict(
+        #             info = {"mjcf_path": obj_model_path,},
+        #             type = "object",
+        #             name = "obj_apple_0",
+        #             obj_groups = None,
+        #             placement = dict(
+        #                 fixture=self.fixture_refs[index]["counter"],
+        #                 sample_region_kwargs=dict(
+        #                     ref=self.fixture_refs[index]["sink"],
+        #                 ),
+        #                 size=(0.2, 0.2),
+        #                 pos=('ref',-0.2),
+        #                 offset=(0.5, 0),
+        #                 rotation=(0,0)
+        #                 ),
+        #         ) 
+        #     )
 
         obj_model_path = os.path.join(
             ROBOCASA_OBJAVERSE_DIR, "apple/apple_0/model.xml"

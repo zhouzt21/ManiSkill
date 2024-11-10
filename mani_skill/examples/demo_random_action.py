@@ -89,6 +89,10 @@ def main(args: Args):
         record_dir = record_dir.format(env_id=args.env_id)
         env = RecordEpisode(env, record_dir, info_on_video=False, save_trajectory=False, max_steps_per_video=gym_utils.find_max_episode_steps_value(env))
 
+    # from mani_skill.utils.scene_builder.robocasa.fixtures.fixture import FixtureType
+    # scene_idx = 0
+    # import pdb;pdb.set_trace()
+    # env.counter = env.scene_builder.get_fixture(fixtures=env.scene_builder.scene_data[scene_idx]["fixtures"], id=FixtureType.COUNTER)
     if verbose:
         print("Observation space", env.observation_space)
         print("Action space", env.action_space)

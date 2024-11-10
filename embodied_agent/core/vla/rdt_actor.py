@@ -10,10 +10,13 @@ from PIL import Image as PImage
 
 from embodied_agent.third_party.vla.rdt.constants import *
 from embodied_agent.third_party.vla.rdt.models.multimodal_encoder.t5_encoder import T5Embedder
-from embodied_agent.third_party.vla.rdt.scripts.agilex_model import (
-    RoboticDiffusionTransformerModel, create_model as create_RDT_model
+# from embodied_agent.third_party.vla.rdt.scripts.agilex_model import (
+#     RoboticDiffusionTransformerModel, create_model as create_RDT_model
+# )
+from embodied_agent.core.vla.rdt_aloha_model import (
+    create_model as create_RDT_model, 
+    RoboticDiffusionTransformerModel
 )
-
 
 # TODO: currently, it does not support batched execution.
 
@@ -62,7 +65,7 @@ class RDTActor:
         self.action_chunk_size = self.config["common"]["action_chunk_size"]
 
         self.rdt_policy = self.make_policy()
-        self.lang_tokenizer, self.lang_encoder = self.make_lang_models()
+        self.lang_tokenizer, self.lang_encoder = None, None
 
         self.last_instruction = None
         self.action_buffer = None
@@ -100,6 +103,9 @@ class RDTActor:
     
     @torch.no_grad()
     def encode_instruction(self, instr: str):
+        if self.lang_tokenizer is None or self.lang_encoder is None:
+            self.lang_tokenizer, self.lang_encoder = self.make_lang_models()
+        
         tokens = self.lang_tokenizer(
             instr, return_tensors="pt",
             padding="longest",
@@ -165,13 +171,17 @@ class RDTActor:
 
         return actions
 
-    def predict_action(self, obs: Dict, instr: str):
+    def predict_action(self, obs: Dict, instr: str=None, text_embedding: torch.Tensor=None):
         if instr is not self.last_instruction:
             print("[INFO] Instruction changed, re-encoding language and re-compute actions.")
             print("[INFO] New instruction: ", instr)
             self.internal_t = 0
             self.last_instruction = instr
             self.text_embedding = self.encode_instruction(instr)
+
+        if text_embedding is not None:
+            # print("[INFO] Using pre-computed language embedding.")
+            self.text_embedding = text_embedding
 
         self.update_obs_window(
             dict_apply(obs, lambda x: torch.squeeze(x, dim=0)))

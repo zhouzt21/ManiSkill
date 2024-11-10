@@ -1,6 +1,7 @@
 import gymnasium as gym
 import numpy as np
 import sapien
+import torch
 
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.utils import gym_utils
@@ -33,7 +34,7 @@ class Args:
     num_envs: Annotated[int, tyro.conf.arg(aliases=["-n"])] = 1
     """Number of environments to run."""
 
-    control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = "bi_pd_joint_delta_pos"
+    control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = "bi_pd_joint_pos"
     """Control mode"""
 
     render_mode: str = "rgb_array"
@@ -53,6 +54,9 @@ class Args:
 
     seed: Annotated[Optional[Union[int, List[int]]], tyro.conf.arg(aliases=["-s"])] = None
     """Seed(s) for random actions and simulator. Can be a single integer or a list of integers. Default is None (no seeds)"""
+
+    text_embedding: Optional[str] = None
+    """Pre-computed text embedding to directly load from disk"""
 
 def main(args: Args):
     np.set_printoptions(suppress=True, precision=3)
@@ -109,9 +113,14 @@ def main(args: Args):
 
     actor = RDTActor()
     instruction = env.get_task_description()
+    if args.text_embedding is not None:
+        text_embedding = torch.load(args.text_embedding)["embeddings"]
+    else:
+        text_embedding = actor.encode_instruction(instruction)
     
     for i in range(1000):
-        action = actor.predict_action(obs, instr=instruction)
+        action = actor.predict_action(obs, text_embedding=text_embedding)
+        print("Step", i, "Action", action)
         obs, reward, terminated, truncated, info = env.step(action)
         if args.render_mode is not None:
             env.render()

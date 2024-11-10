@@ -75,6 +75,11 @@ ln -s /path/to/rdt-170m google/rdt-170m
 After installation, you can run the following command to verify your installation which will save the episode into `video` folder in your current dir.
 
 ```bash
-python -m embodied_agent.examples.demo_rdt --record_dir 'video' --render_mode sensors
+python -m embodied_agent.examples.demo_rdt --record_dir 'videos' --render_mode sensors
 ```
 
+If your GPU memory is not enough to encode the language, please refer to [this file](third_party/vla/rdt/scripts/encode_lang.py) or `encode_instruction` in [this file](core/vla/rdt_actor.py) for precomputation and specify `--text_embedding`
+
+```bash
+python -m embodied_agent.examples.demo_rdt --record_dir 'videos' --render_mode sensors --text_embedding "/path/to//embedding"
+```

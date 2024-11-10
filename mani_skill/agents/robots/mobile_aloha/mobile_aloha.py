@@ -44,8 +44,8 @@ class MobileAloha(BaseAgent):
             CameraConfig(
                 uid="cam_high",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
-                width=128,
-                height=128,
+                width=640,
+                height=480,
                 fov=2,
                 near=0.01,
                 far=100,
@@ -54,8 +54,8 @@ class MobileAloha(BaseAgent):
             CameraConfig(
                 uid="cam_left_wrist",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
-                width=128,
-                height=128,
+                width=640,
+                height=480,
                 fov=2,
                 near=0.01,
                 far=100,
@@ -64,8 +64,8 @@ class MobileAloha(BaseAgent):
             CameraConfig(
                 uid="cam_right_wrist",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
-                width=128,
-                height=128,
+                width=640,
+                height=480,
                 fov=2,
                 near=0.01,
                 far=100,

@@ -167,7 +167,8 @@ def plan_to_pose(pose, planner, agent, env, gripper_target=None):
             action = torch.from_numpy(action).float().to(env.device)
             _ = env.step(action.unsqueeze(0))
 
-            env.render()
+            if i % 10 == 0:
+                env.render()
 
     print("[Target] EE pose", pose)
     print("[Result] EE pose", agent.get_state()["fl_EE_pose"][0].tolist())

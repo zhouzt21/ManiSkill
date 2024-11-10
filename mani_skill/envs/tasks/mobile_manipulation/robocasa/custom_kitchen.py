@@ -34,7 +34,7 @@ ROBOCASA_OBJAVERSE_DIR = ROBOCASA_ASSET_DIR / "objects/objaverse"
     "RoboCasaCustomKitchen-v1", max_episode_steps=100, asset_download_ids=["RoboCasa"]
 )
 class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
-    SUPPORTED_ROBOTS = ["fetch", "none"], "mobile_aloha"
+    SUPPORTED_ROBOTS = ["fetch", "none", "mobile_aloha"]
     SUPPORTED_REWARD_MODES = ["none"]
     EXCLUDE_LAYOUTS = []
 

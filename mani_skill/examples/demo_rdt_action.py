@@ -48,7 +48,6 @@ def get_action_data(data_read):
     return data_dict
 
 
-
 def get_dual_arm_14_states(data_dict, step_id):
     action_read=[]
     # left
@@ -161,7 +160,7 @@ def main(args: Args):
 
     if verbose:
         print("Observation space", env.observation_space)
-        print("Action space", env.action_space) # joint_pos  range [-10,10],  gripper [-0.01, 0.045]
+        print("Action space", env.action_space)
         if env.unwrapped.agent is not None:
             print("Control mode", env.unwrapped.control_mode)
         print("Reward mode", env.unwrapped.reward_mode)
@@ -178,8 +177,38 @@ def main(args: Args):
     data_dict = get_action_data(np.load(os.path.join(PACKAGE_DIR,'data/data_0.npz')))
     step = 0
     while True:
+        '''
+            [rdt]
+
+                jonit_pos range     []
+
+                gripper range       [0, 1]
+
+                [order] The index in the state 
+                                -> look up for STATE_VEC_IDX_MAPPING in configs/state_vec.py
+                
+            [maniskill aloha]
+
+                joint_pos range     [-10,       10]
+
+                gripper range       [-0.01,  0.045]
+
+                [order] The index in the action 
+                    arm_left:       joint1  -> 0
+                                    jonit2  -> 1
+                                    ...
+                                    jonit6  -> 5
+
+                    gripper_left:   joint   -> 6
+
+                    arm_right:      joint1  -> 7
+                                    jonit2  -> 8
+                                    ...
+                                    jonit6  -> 12
+
+                    gripper_right:  joint   -> 13
+        ''' 
         action_read, step = get_dual_arm_14_states(data_dict, step)
-        "the order is: arm_left(joint1->6), gripper_left(1), arm_right(6), gripper_right(1),"
         obs, reward, terminated, truncated, info = env.step(action_read)
         if verbose:
             print("reward", reward)

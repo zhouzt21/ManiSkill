@@ -48,37 +48,41 @@ def get_action_data(data_read):
     return data_dict
 
 
-def get_dual_arm_14_states(data_dict, step_id):
-    action_read=[]
-    # left
-    for joint_id in range(6):
-        action_read.append(data_dict["states"][step_id][0][50+joint_id])
-    action_read.append(data_dict["states"][step_id][0][60])# gripper [0,1]
-    # right
-    for joint_id in range(6):
-        action_read.append(data_dict["states"][step_id][0][joint_id])
-    action_read.append(data_dict["states"][step_id][0][10])
+def get_dual_arm_data(data_dict, step_id, data_name: str):
+    if data_name == "actions" or data_name=="states":
+        data_read=[]
+        # left
+        for joint_id in range(6):
+            data_read.append(data_dict[data_name][step_id][0][50+joint_id])
+        data_read.append(data_dict[data_name][step_id][0][60])# gripper [0,1]
+        # right
+        for joint_id in range(6):
+            data_read.append(data_dict[data_name][step_id][0][joint_id])
+        data_read.append(data_dict[data_name][step_id][0][10])
+        #step update
+        next_step_id = step_id + 1
+        # should be torch.tensor or numpy. tensor better.
+        data_read = np.array(data_read, dtype=np.float32)
+        return data_read, next_step_id
+    else:
+        assert 0, "you can just use actions or states as name"
 
-    #step update
-    next_step_id = step_id + 1
 
-    # should be torch.tensor or numpy. tensor better.
-    action_read = np.array(action_read, dtype=np.float32)
-    
-    return action_read, next_step_id
+def get_single_arm_data(data_dict, step_id, data_name: str):
+    if data_name == "actions" or data_name=="states":
+        data_read=[]
+        # left: Notice that the left arm is main arm which is right arm in rdt.
+        for joint_id in range(6):
+            data_read.append(data_dict[data_name][step_id][0][50+joint_id])
+        data_read.append(data_dict[data_name][step_id][0][60])# gripper [0,1]
+        #step update
+        next_step_id = step_id + 1
+        # should be torch.tensor or numpy. tensor better.
+        data_read = np.array(data_read, dtype=np.float32)
+        return data_read, next_step_id
+    else:
+        assert 0, "you can just use actions or states as name"
 
-
-def get_single_arm_7_states(data_dict, step_id):
-    action_read=[]
-    # left: Notice that the left arm is main arm which is right arm in rdt.
-    for joint_id in range(6):
-        action_read.append(data_dict["states"][step_id][0][50+joint_id])
-    action_read.append(data_dict["states"][step_id][0][60])
-
-    next_step_id = step_id + 1
-    action_read = np.array(action_read, dtype=np.float32)
-
-    return action_read, next_step_id
 
 @dataclass
 class Args:
@@ -179,12 +183,11 @@ def main(args: Args):
     while True:
         '''
             [rdt]
+                jonit_pos range     []? Luckily maybe not scaled
 
-                jonit_pos range     []
+                gripper range       [0, 1]? when test find it is not [0,1]
 
-                gripper range       [0, 1]
-
-                [order] The index in the state 
+                [order] The index in the state (shape is [128,])
                                 -> look up for STATE_VEC_IDX_MAPPING in configs/state_vec.py
                 
             [maniskill aloha]
@@ -193,7 +196,7 @@ def main(args: Args):
 
                 gripper range       [-0.01,  0.045]
 
-                [order] The index in the action 
+                [order] The index in the action (shape is [14,]) 
                     arm_left:       joint1  -> 0
                                     jonit2  -> 1
                                     ...
@@ -208,7 +211,7 @@ def main(args: Args):
 
                     gripper_right:  joint   -> 13
         ''' 
-        action_read, step = get_dual_arm_14_states(data_dict, step)
+        action_read, step = get_dual_arm_data(data_dict, step, "actions")
         obs, reward, terminated, truncated, info = env.step(action_read)
         if verbose:
             print("reward", reward)

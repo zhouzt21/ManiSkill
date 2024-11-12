@@ -101,6 +101,7 @@ class MobileAloha(BaseAgent):
 
         super().__init__(*args, **kwargs)
 
+
     @property
     def _controller_configs(self):
         # -------------------------------------------------------------------------- #
@@ -243,13 +244,14 @@ class MobileAloha(BaseAgent):
                 kwargs1 = dict(joint_names=self.fl_arm_joint_names)
                 kwargs2 = dict(joint_names=self.fr_arm_joint_names)
 
+            # two mini modes for each  mode
             controller_configs[control_mode] = dict(
                 arm=config_fn(**kwargs1),
                 gripper=gripper_pd_joint_pos_fn(
                     joint_names=self.fl_gripper_joint_names
                 )
             )
-
+            # two mini modes for each  mode
             controller_configs["bi_" + control_mode] = dict(
                 arm_left=config_fn(**kwargs1),
                 gripper_left=gripper_pd_joint_pos_fn(

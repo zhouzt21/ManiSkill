@@ -51,13 +51,19 @@ def get_action_data(data_read):
 
 def get_dual_arm_14_states(data_dict, step_id):
     action_read=[]
+    # left
+    for joint_id in range(6):
+        action_read.append(data_dict["states"][step_id][0][50+joint_id])
+    action_read.append(data_dict["states"][step_id][0][60])# gripper [0,1]
+    # right
     for joint_id in range(6):
         action_read.append(data_dict["states"][step_id][0][joint_id])
     action_read.append(data_dict["states"][step_id][0][10])
-    for joint_id in range(6):
-        action_read.append(data_dict["states"][step_id][0][50+joint_id])
-    action_read.append(data_dict["states"][step_id][0][60])
+
+    #step update
     next_step_id = step_id + 1
+
+    # should be torch.tensor or numpy. tensor better.
     action_read = np.array(action_read, dtype=np.float32)
     
     return action_read, next_step_id
@@ -65,12 +71,11 @@ def get_dual_arm_14_states(data_dict, step_id):
 
 def get_single_arm_7_states(data_dict, step_id):
     action_read=[]
+    # left: Notice that the left arm is main arm which is right arm in rdt.
     for joint_id in range(6):
-        action_read.append(data_dict["states"][step_id][0][joint_id])
-    action_read.append(data_dict["states"][step_id][0][10])
-    # for joint_id in range(6):
-    #     action_read.append(data_dict["states"][step_id][0][50+joint_id])
-    # action_read.append(data_dict["states"][step_id][0][60])
+        action_read.append(data_dict["states"][step_id][0][50+joint_id])
+    action_read.append(data_dict["states"][step_id][0][60])
+
     next_step_id = step_id + 1
     action_read = np.array(action_read, dtype=np.float32)
 
@@ -96,7 +101,7 @@ class Args:
     num_envs: Annotated[int, tyro.conf.arg(aliases=["-n"])] = 1
     """Number of environments to run."""
 
-    control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = "bi_pd_joint_delta_pos"
+    control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = "bi_pd_joint_pos" # None
     """Control mode"""
 
     render_mode: str = "rgb_array"
@@ -156,7 +161,7 @@ def main(args: Args):
 
     if verbose:
         print("Observation space", env.observation_space)
-        print("Action space", env.action_space)
+        print("Action space", env.action_space) # joint_pos  range [-10,10],  gripper [-0.01, 0.045]
         if env.unwrapped.agent is not None:
             print("Control mode", env.unwrapped.control_mode)
         print("Reward mode", env.unwrapped.reward_mode)
@@ -174,14 +179,16 @@ def main(args: Args):
     step = 0
     while True:
         action_read, step = get_dual_arm_14_states(data_dict, step)
+        "the order is: arm_left(joint1->6), gripper_left(1), arm_right(6), gripper_right(1),"
         obs, reward, terminated, truncated, info = env.step(action_read)
         if verbose:
             print("reward", reward)
             print("terminated", terminated)
-            print("truncated", truncated)
+            print("truncated", truncated)# reach max step which is define at register_env function
             print("info", info)
         if args.render_mode is not None:
             env.render()
+        # Try to modify
         if args.render_mode is None or args.render_mode != "human":
             if (terminated | truncated).any():
                 break

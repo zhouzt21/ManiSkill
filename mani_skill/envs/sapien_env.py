@@ -1024,6 +1024,7 @@ class BaseEnv(gym.Env):
             if self.agent is not None:
                 self.agent.before_simulation_step()
             self._before_simulation_step()
+            # import pdb;pdb.set_trace()
             self.scene.step()
             self._after_simulation_step()
         self._after_control_step()

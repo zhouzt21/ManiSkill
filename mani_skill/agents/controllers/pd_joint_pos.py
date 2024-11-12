@@ -81,9 +81,11 @@ class PDJointPosController(BaseController):
                 self._target_qpos = self._start_qpos + action
         else:
             # Compatible with mimic controllers. Need to clone here otherwise cannot do in-place replacements in the reset function
+            # import pdb;pdb.set_trace()
             self._target_qpos = torch.broadcast_to(
                 action, self._start_qpos.shape
             ).clone()
+        # import pdb;pdb.set_trace()
         if self.config.interpolate:
             self._step_size = (self._target_qpos - self._start_qpos) / self._sim_steps
         else:

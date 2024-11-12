@@ -30,8 +30,9 @@ from mani_skill.envs.tasks.mobile_manipulation.robocasa.kitchen import RoboCasaK
 
 ROBOCASA_OBJAVERSE_DIR = ROBOCASA_ASSET_DIR / "objects/objaverse"
 
+# Here modify the max_steps
 @register_env(
-    "RoboCasaCustomKitchen-v1", max_episode_steps=100, asset_download_ids=["RoboCasa"]
+    "RoboCasaCustomKitchen-v1", max_episode_steps=1000, asset_download_ids=["RoboCasa"]
 )
 class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
     SUPPORTED_ROBOTS = ["fetch", "none"], "mobile_aloha"

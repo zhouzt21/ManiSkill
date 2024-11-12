@@ -1,37 +1,102 @@
 import gymnasium as gym
 import numpy as np
 import sapien
+import os
 
 from mani_skill.envs.sapien_env import BaseEnv
 from mani_skill.utils import gym_utils
 from mani_skill.utils.wrappers import RecordEpisode
-
+from mani_skill import PACKAGE_DIR
 
 import tyro
 from dataclasses import dataclass
 from typing import List, Optional, Annotated, Union
+
+
+def get_action_data(data_read):
+    data_dict = {}
+    data_dict['total_timesteps'] = data_read["total_timesteps"]
+    data_dict['ctrl_freq'] = data_read["ctrl_freq"]
+    data_dict['total_timesteps'] = data_read["total_timesteps"]
+    data_dict['dataset_idx'] = data_read["dataset_idx"]
+    data_dict["states"]=[]
+    data_dict["actions"]=[]
+    data_dict["images_0"]=[]
+    data_dict["images_1"]=[]
+    data_dict["images_2"]=[]
+    data_dict["images_3"]=[]
+    data_dict["images_4"]=[]
+    data_dict["images_5"]=[]
+    data_dict["state_elem_mask"]=[]
+    data_dict["state_norm"]=[]
+
+    for i in range(data_dict['total_timesteps']):
+        data_dict['states'].append(data_read[f'states_{i}'])
+        data_dict['actions'].append(data_read[f'actions_{i}'])
+
+        # #very large; total maybe 3 GB
+        # data_dict["images_0"].append(data_read[f'images_0_{i}'])
+        # data_dict["images_1"].append(data_read[f'images_1_{i}'])
+        # data_dict["images_2"].append(data_read[f'images_2_{i}'])
+        # data_dict["images_3"].append(data_read[f'images_3_{i}'])
+        # data_dict["images_4"].append(data_read[f'images_4_{i}'])
+        # data_dict["images_5"].append(data_read[f'images_5_{i}'])
+
+        # data_dict["state_elem_mask"].append(data_read[f'state_elem_mask_{i}'])
+        # data_dict["state_norm"].append(data_read[f'state_norm_{i}'])
+
+    return data_dict
+
+
+
+def get_dual_arm_14_states(data_dict, step_id):
+    action_read=[]
+    for joint_id in range(6):
+        action_read.append(data_dict["states"][step_id][0][joint_id])
+    action_read.append(data_dict["states"][step_id][0][10])
+    for joint_id in range(6):
+        action_read.append(data_dict["states"][step_id][0][50+joint_id])
+    action_read.append(data_dict["states"][step_id][0][60])
+    next_step_id = step_id + 1
+    action_read = np.array(action_read, dtype=np.float32)
+    
+    return action_read, next_step_id
+
+
+def get_single_arm_7_states(data_dict, step_id):
+    action_read=[]
+    for joint_id in range(6):
+        action_read.append(data_dict["states"][step_id][0][joint_id])
+    action_read.append(data_dict["states"][step_id][0][10])
+    # for joint_id in range(6):
+    #     action_read.append(data_dict["states"][step_id][0][50+joint_id])
+    # action_read.append(data_dict["states"][step_id][0][60])
+    next_step_id = step_id + 1
+    action_read = np.array(action_read, dtype=np.float32)
+
+    return action_read, next_step_id
 
 @dataclass
 class Args:
     env_id: Annotated[str, tyro.conf.arg(aliases=["-e"])] = "PushCube-v1"
     """The environment ID of the task you want to simulate"""
 
-    obs_mode: Annotated[str, tyro.conf.arg(aliases=["-o"])] = "none"
+    obs_mode: Annotated[str, tyro.conf.arg(aliases=["-o"])] = "rgb"
     """Observation mode"""
 
-    robot_uids: Annotated[Optional[str], tyro.conf.arg(aliases=["-r"])] = None
+    robot_uids: Annotated[Optional[str], tyro.conf.arg(aliases=["-r"])] = 'mobile_aloha'
     """Robot UID(s) to use. Can be a comma separated list of UIDs or empty string to have no agents. If not given then defaults to the environments default robot"""
 
     sim_backend: Annotated[str, tyro.conf.arg(aliases=["-b"])] = "auto"
     """Which simulation backend to use. Can be 'auto', 'cpu', 'gpu'"""
 
-    reward_mode: Optional[str] = None
+    reward_mode: Optional[str] = "none"
     """Reward mode"""
 
     num_envs: Annotated[int, tyro.conf.arg(aliases=["-n"])] = 1
     """Number of environments to run."""
 
-    control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = None
+    control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = "bi_pd_joint_delta_pos"
     """Control mode"""
 
     render_mode: str = "rgb_array"
@@ -89,10 +154,6 @@ def main(args: Args):
         record_dir = record_dir.format(env_id=args.env_id)
         env = RecordEpisode(env, record_dir, info_on_video=False, save_trajectory=False, max_steps_per_video=gym_utils.find_max_episode_steps_value(env))
 
-    # from mani_skill.utils.scene_builder.robocasa.fixtures.fixture import FixtureType
-    # scene_idx = 0
-    # import pdb;pdb.set_trace()
-    # env.counter = env.scene_builder.get_fixture(fixtures=env.scene_builder.scene_data[scene_idx]["fixtures"], id=FixtureType.COUNTER)
     if verbose:
         print("Observation space", env.observation_space)
         print("Action space", env.action_space)
@@ -100,8 +161,6 @@ def main(args: Args):
             print("Control mode", env.unwrapped.control_mode)
         print("Reward mode", env.unwrapped.reward_mode)
 
-    # import pdb;pdb.set_trace()
-    # obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=True))
     obs, _ = env.reset(seed=[x + 2022 for x in args.seed], options=dict(reconfigure=True))
     if args.seed is not None and env.action_space is not None:
         env.action_space.seed(args.seed[0])
@@ -110,9 +169,12 @@ def main(args: Args):
         if isinstance(viewer, sapien.utils.Viewer):
             viewer.paused = args.pause
         env.render()
+    # load .npz file
+    data_dict = get_action_data(np.load(os.path.join(PACKAGE_DIR,'data/data_0.npz')))
+    step = 0
     while True:
-        action = env.action_space.sample() if env.action_space is not None else None
-        obs, reward, terminated, truncated, info = env.step(action)
+        action_read, step = get_dual_arm_14_states(data_dict, step)
+        obs, reward, terminated, truncated, info = env.step(action_read)
         if verbose:
             print("reward", reward)
             print("terminated", terminated)
@@ -123,6 +185,8 @@ def main(args: Args):
         if args.render_mode is None or args.render_mode != "human":
             if (terminated | truncated).any():
                 break
+        if(step>=data_dict['total_timesteps']):
+            break
     env.close()
 
     if record_dir:

@@ -62,7 +62,7 @@ class RDTActor:
         self.action_chunk_size = self.config["common"]["action_chunk_size"]
 
         self.rdt_policy = self.make_policy()
-        self.lang_tokenizer, self.lang_encoder = self.make_lang_models()
+        # self.lang_tokenizer, self.lang_encoder = self.make_lang_models()
 
         self.last_instruction = None
         self.action_buffer = None
@@ -79,39 +79,39 @@ class RDTActor:
         model = create_RDT_model(
             args=self.config,
             dtype=torch.bfloat16,
-            # pretrained=RDT1B_PATH,
-            pretrained=RDT170M_PATH,
+            pretrained=RDT1B_PATH,
+            # pretrained=RDT170M_PATH,
             pretrained_vision_encoder_name_or_path=SIGLIP_PATH,
             control_frequency=self.ctrl_freq
         )
 
         return model
     
-    def make_lang_models(self):
-        # Note: if your GPU VRAM is less than 24GB, 
-        # it is recommanded to enable offloading by specifying an offload directory.
-        text_embedder = T5Embedder(
-            from_pretrained=T5_PATH, 
-            model_max_length=self.config["dataset"]["tokenizer_max_length"], 
-            device=self.device,
-            use_offload_folder=None # Specify your offload directory here, ensuring the directory exists.
-        )
+    # def make_lang_models(self):
+    #     # Note: if your GPU VRAM is less than 24GB, 
+    #     # it is recommanded to enable offloading by specifying an offload directory.
+    #     text_embedder = T5Embedder(
+    #         from_pretrained=T5_PATH, 
+    #         model_max_length=self.config["dataset"]["tokenizer_max_length"], 
+    #         device=self.device,
+    #         use_offload_folder=None # Specify your offload directory here, ensuring the directory exists.
+    #     )
 
-        return text_embedder.tokenizer, text_embedder.model
+    #     return text_embedder.tokenizer, text_embedder.model
     
-    @torch.no_grad()
-    def encode_instruction(self, instr: str):
-        tokens = self.lang_tokenizer(
-            instr, return_tensors="pt",
-            padding="longest",
-            truncation=True
-        )["input_ids"].to(self.device)
+    # @torch.no_grad()
+    # def encode_instruction(self, instr: str):
+    #     tokens = self.lang_tokenizer(
+    #         instr, return_tensors="pt",
+    #         padding="longest",
+    #         truncation=True
+    #     )["input_ids"].to(self.device)
 
-        tokens = tokens.view(1, -1)
+    #     tokens = tokens.view(1, -1)
         
-        pred = self.lang_encoder(tokens).last_hidden_state
+    #     pred = self.lang_encoder(tokens).last_hidden_state
 
-        return pred
+    #     return pred
     
     def update_obs_window(self, obs):
         if self.obs_window is None:
@@ -172,7 +172,9 @@ class RDTActor:
             print("[INFO] New instruction: ", instr)
             self.internal_t = 0
             self.last_instruction = instr
-            self.text_embedding = self.encode_instruction(instr)
+            # self.text_embedding = self.encode_instruction(instr)
+            lang_embeddings_path = '/home/bingwen/Documents/ManiSkill/embodied_agent/third_party/vla/rdt-lang/handover_pan.pt'
+            self.text_embedding = torch.load(lang_embeddings_path)['embeddings']
 
         self.update_obs_window(
             dict_apply(obs, lambda x: torch.squeeze(x, dim=0)))

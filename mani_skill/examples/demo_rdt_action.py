@@ -13,41 +13,6 @@ from dataclasses import dataclass
 from typing import List, Optional, Annotated, Union
 
 
-def get_action_data(data_read):
-    data_dict = {}
-    data_dict['total_timesteps'] = data_read["total_timesteps"]
-    data_dict['ctrl_freq'] = data_read["ctrl_freq"]
-    data_dict['total_timesteps'] = data_read["total_timesteps"]
-    data_dict['dataset_idx'] = data_read["dataset_idx"]
-    data_dict["states"]=[]
-    data_dict["actions"]=[]
-    data_dict["images_0"]=[]
-    data_dict["images_1"]=[]
-    data_dict["images_2"]=[]
-    data_dict["images_3"]=[]
-    data_dict["images_4"]=[]
-    data_dict["images_5"]=[]
-    data_dict["state_elem_mask"]=[]
-    data_dict["state_norm"]=[]
-
-    for i in range(data_dict['total_timesteps']):
-        data_dict['states'].append(data_read[f'states_{i}'])
-        data_dict['actions'].append(data_read[f'actions_{i}'])
-
-        # #very large; total maybe 3 GB
-        # data_dict["images_0"].append(data_read[f'images_0_{i}'])
-        # data_dict["images_1"].append(data_read[f'images_1_{i}'])
-        # data_dict["images_2"].append(data_read[f'images_2_{i}'])
-        # data_dict["images_3"].append(data_read[f'images_3_{i}'])
-        # data_dict["images_4"].append(data_read[f'images_4_{i}'])
-        # data_dict["images_5"].append(data_read[f'images_5_{i}'])
-
-        # data_dict["state_elem_mask"].append(data_read[f'state_elem_mask_{i}'])
-        # data_dict["state_norm"].append(data_read[f'state_norm_{i}'])
-
-    return data_dict
-
-
 def get_dual_arm_data(data_dict, step_id, data_name: str):
     if data_name == "actions" or data_name=="states":
         data_read=[]
@@ -86,7 +51,7 @@ def get_single_arm_data(data_dict, step_id, data_name: str):
 
 @dataclass
 class Args:
-    env_id: Annotated[str, tyro.conf.arg(aliases=["-e"])] = "PushCube-v1"
+    env_id: Annotated[str, tyro.conf.arg(aliases=["-e"])] = "RoboCasaCustomKitchen-v1"
     """The environment ID of the task you want to simulate"""
 
     obs_mode: Annotated[str, tyro.conf.arg(aliases=["-o"])] = "rgb"
@@ -107,7 +72,7 @@ class Args:
     control_mode: Annotated[Optional[str], tyro.conf.arg(aliases=["-c"])] = "bi_pd_joint_pos" # None
     """Control mode"""
 
-    render_mode: str = "rgb_array"
+    render_mode: str = "human" # "rgb_array"
     """Render mode"""
 
     shader: str = "default"
@@ -122,7 +87,7 @@ class Args:
     quiet: bool = False
     """Disable verbose output."""
 
-    seed: Annotated[Optional[Union[int, List[int]]], tyro.conf.arg(aliases=["-s"])] = None
+    seed: Annotated[Optional[Union[int, List[int]]], tyro.conf.arg(aliases=["-s"])] = 0 # None
     """Seed(s) for random actions and simulator. Can be a single integer or a list of integers. Default is None (no seeds)"""
 
 def main(args: Args):
@@ -177,9 +142,11 @@ def main(args: Args):
         if isinstance(viewer, sapien.utils.Viewer):
             viewer.paused = args.pause
         env.render()
+
     # load .npz file
-    data_dict = get_action_data(np.load(os.path.join(PACKAGE_DIR,'data/data_0.npz')))
+    data_dict = np.load(os.path.join(PACKAGE_DIR,'data/data_0.npz'))
     step = 0
+    
     while True:
         '''
             [rdt]

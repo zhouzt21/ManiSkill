@@ -46,5 +46,5 @@ imgui.ini
 htmlcov/
 
 video/
-mani_skill/bingwen/
-mani_skill/data/
+mani_skill/bingwen
+mani_skill/data

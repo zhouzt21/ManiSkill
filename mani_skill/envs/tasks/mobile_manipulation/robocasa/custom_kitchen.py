@@ -93,6 +93,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         super().__init__(*args, **all_kwargs)
 
     def get_task_description(self):
+        # TODO To be changed.
         return "put the apple in the bowl"
 
     # copy from robocasa, can not be used in maniskill

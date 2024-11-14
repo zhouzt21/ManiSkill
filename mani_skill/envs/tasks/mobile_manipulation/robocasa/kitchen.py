@@ -248,7 +248,7 @@ class RoboCasaKitchenEnv(BaseEnv):
 
     @property
     def _default_sim_config(self):
-        return SimConfig(spacing=8, sim_freq=200, control_freq=50) # modify the sim_freq parameter here. 
+        return SimConfig(spacing=8, sim_freq=200, control_freq=25) # modify the sim_freq parameter here. 
 
     @property
     def _default_sensor_configs(self):

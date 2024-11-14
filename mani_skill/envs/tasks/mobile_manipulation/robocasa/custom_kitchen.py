@@ -59,7 +59,7 @@ class RoboCasaCustomKitchenEnv(RoboCasaKitchenEnv):
         render_collision_mesh=False,
         render_visual_mesh=True,
         render_gpu_device_id=-1,
-        control_freq=20,
+        control_freq=25,
         horizon=1000,
         ignore_done=False,
         # hard_reset=True,

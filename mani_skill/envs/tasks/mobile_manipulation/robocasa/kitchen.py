@@ -284,7 +284,6 @@ class RoboCasaKitchenEnv(BaseEnv):
         super()._load_agent(options, Pose.create_from_pq(p=ps))
 
     def _load_scene(self, options: dict):
-        # import pdb;pdb.set_trace()
         self.scene_builder = RoboCasaSceneBuilder(self)
         self.scene_builder.build()
         # self.fixtures = data["fixtures"]

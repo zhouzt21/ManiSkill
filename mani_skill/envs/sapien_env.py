@@ -332,7 +332,6 @@ class BaseEnv(gym.Env):
         self._elapsed_steps = (
             torch.zeros(self.num_envs, device=self.device, dtype=torch.int32)
         )
-        # import pdb;pdb.set_trace()
         obs, _ = self.reset(seed=[2022 + i for i in range(self.num_envs)], options=dict(reconfigure=True))
 
         self._init_raw_obs = common.to_cpu_tensor(obs)
@@ -1024,7 +1023,6 @@ class BaseEnv(gym.Env):
             if self.agent is not None:
                 self.agent.before_simulation_step()
             self._before_simulation_step()
-            # import pdb;pdb.set_trace()
             self.scene.step()
             self._after_simulation_step()
         self._after_control_step()

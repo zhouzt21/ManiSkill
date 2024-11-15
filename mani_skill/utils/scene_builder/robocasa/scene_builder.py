@@ -581,6 +581,8 @@ class RoboCasaSceneBuilder(SceneBuilder):
                     self.env.agent.robot.set_pose(
                         Pose.create_from_pq(p=xyz, q=self.env.agent.robot.pose.q)
                     )
+                elif self.env.robot_uids == "mobile_aloha":
+                    self.env.agent.robot.set_pose(self.robot_poses[env_idx])
 
     def get_fixture_cfgs(self, fixtures):
         """

@@ -32,17 +32,17 @@ class MobileAloha(BaseAgent):
     def _sensor_configs(self):
         return [
             CameraConfig(
-                uid="cam_low",
-                pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
-                width=128,
-                height=128,
+                uid="cam_high",
+                pose=Pose.create_from_pq([0, 0, 0.15], [1, 0, 0, 0]),
+                width=640,
+                height=480,
                 fov=2,
                 near=0.01,
                 far=100,
                 entity_uid="camera_link1",
             ),
             CameraConfig(
-                uid="cam_high",
+                uid="cam_top",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
                 width=640,
                 height=480,

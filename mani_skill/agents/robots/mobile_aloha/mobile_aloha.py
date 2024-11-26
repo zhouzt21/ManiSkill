@@ -335,3 +335,42 @@ class MobileAloha(BaseAgent):
         state["controller"] = self.controller.get_state()
 
         return state
+
+
+@register_agent()
+class MobileAlohaV2(MobileAloha):
+    uid = "mobile_aloha_v2"
+    urdf_path = f"{PACKAGE_ASSET_DIR}/robots/mobile_aloha-v2/urdf/aloha_new_v00.urdf"
+    srdf_path = None
+
+    @property
+    def _sensor_configs(self):
+        return []
+    
+    def __init__(self, *args, **kwargs):
+        # arms
+        self.fl_arm_base_link_name = "fl_base_link"
+        self.fr_arm_base_link_name = "fr_base_link"
+        self.fl_arm_joint_names = [f"fl_joint{i+1}" for i in range(6)] # front-left (main)
+        self.fr_arm_joint_names = [f"fr_joint{i+1}" for i in range(6)] # front-right
+        self.lr_arm_joint_names = [f"lr_joint{i+1}" for i in range(6)] # left-rear
+        self.rr_arm_joint_names = [f"rr_joint{i+1}" for i in range(6)] # left-rear
+        # self.arm_force_limit?
+
+        # grippers
+        self.fl_ee_link_name = "fl_link6"
+        self.fr_ee_link_name = "fr_link6"
+        self.fl_gripper_joint_names = ["fl_joint7", "fl_joint8"] # front-left
+        self.fr_gripper_joint_names = ["fr_joint7", "fr_joint8"] # front-right
+
+        self.arm_base_link_name = self.fl_arm_base_link_name
+        self.arm_joint_names = self.fl_arm_joint_names
+        self.ee_link_name = self.fl_ee_link_name
+        self.gripper_joint_names = self.fl_gripper_joint_names
+
+        # FIXME: wheels
+
+        self.joint_stiffness = 1000
+        self.joint_damping = 2000
+
+        super().__init__(*args, **kwargs)

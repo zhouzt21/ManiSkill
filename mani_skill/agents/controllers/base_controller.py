@@ -100,12 +100,12 @@ class BaseController:
     @property
     def qpos(self):
         """Get current joint positions."""
-        return self.articulation.get_qpos()[..., self.active_joint_indices]
+        return self.articulation.get_qpos()[..., self.active_joint_indices.long()]
 
     @property
     def qvel(self):
         """Get current joint velocities."""
-        return self.articulation.get_qvel()[..., self.active_joint_indices]
+        return self.articulation.get_qvel()[..., self.active_joint_indices.long()]
 
     # -------------------------------------------------------------------------- #
     # Interfaces (implemented in subclasses)

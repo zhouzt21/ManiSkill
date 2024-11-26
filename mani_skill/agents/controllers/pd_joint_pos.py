@@ -18,7 +18,7 @@ class PDJointPosController(BaseController):
 
     def _get_joint_limits(self):
         qlimits = (
-            self.articulation.get_qlimits()[0, self.active_joint_indices].cpu().numpy()
+            self.articulation.get_qlimits()[0, self.active_joint_indices.long()].cpu().numpy()
         )
         # Override if specified
         if self.config.lower is not None:
@@ -67,7 +67,7 @@ class PDJointPosController(BaseController):
 
     def set_drive_targets(self, targets):
         self.articulation.set_joint_drive_targets(
-            targets, self.joints, self.active_joint_indices
+            targets, self.joints, self.active_joint_indices.long()
         )
 
     def set_action(self, action: Array):

@@ -744,6 +744,12 @@
         <axis xyz="1 0 0" />
         <limit lower="-10" upper="10" effort="100" velocity="1000" />
     </joint>
+    <link name="fl_end_effector" />
+    <joint name="fl_ee_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="fl_link6"/>
+        <child link="fl_end_effector"/>
+    </joint>
 
     <!-- 相机的链接 -->
     <link name="left_camera">
@@ -1090,6 +1096,12 @@
         <child link="fr_link6" />
         <axis xyz="1 0 0" />
         <limit lower="-10" upper="10" effort="100" velocity="1000" />
+    </joint>
+    <link name="fr_end_effector" />
+    <joint name="fr_ee_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="fr_link6"/>
+        <child link="fr_end_effector"/>
     </joint>
 
 

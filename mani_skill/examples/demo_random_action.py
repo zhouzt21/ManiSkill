@@ -101,8 +101,8 @@ def main(args: Args):
         print("Reward mode", env.unwrapped.reward_mode)
 
     # import pdb;pdb.set_trace()
-    # obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=True))
-    obs, _ = env.reset(seed=[x + 2022 for x in args.seed], options=dict(reconfigure=True))
+    obs, _ = env.reset(seed=args.seed, options=dict(reconfigure=True))
+    # obs, _ = env.reset(seed=[x + 2022 for x in args.seed], options=dict(reconfigure=True))
     if args.seed is not None and env.action_space is not None:
         env.action_space.seed(args.seed[0])
     if args.render_mode is not None:
@@ -112,6 +112,7 @@ def main(args: Args):
         env.render()
     while True:
         action = env.action_space.sample() if env.action_space is not None else None
+        print("action", action)
         obs, reward, terminated, truncated, info = env.step(action)
         if verbose:
             print("reward", reward)

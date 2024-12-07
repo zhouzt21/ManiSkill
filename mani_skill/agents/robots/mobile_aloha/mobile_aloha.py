@@ -333,3 +333,14 @@ class MobileAloha(BaseAgent):
         state["controller"] = self.controller.get_state()
 
         return state
+    
+    def is_grasping(self, object: Actor | None = None):
+
+        # print("mobile_aloha is_grasping")
+        return False
+    
+
+    def is_static(self, threshold: float):
+
+        print("mobile_aloha is_static")
+        return super().is_static(threshold)

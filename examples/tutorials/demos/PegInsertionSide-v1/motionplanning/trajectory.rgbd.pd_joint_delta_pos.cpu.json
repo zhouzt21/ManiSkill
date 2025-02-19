@@ -1,0 +1,48 @@
+{
+  "env_info": {
+    "env_id": "PegInsertionSide-v1",
+    "env_kwargs": {
+      "obs_mode": "rgbd",
+      "control_mode": "pd_joint_delta_pos",
+      "render_mode": "rgb_array",
+      "reward_mode": null,
+      "sensor_configs": {
+        "shader_pack": "default"
+      },
+      "human_render_camera_configs": {
+        "shader_pack": "default"
+      },
+      "viewer_camera_configs": {
+        "shader_pack": "default"
+      },
+      "sim_backend": "auto",
+      "shader_dir": "default"
+    },
+    "max_episode_steps": 100
+  },
+  "commit_info": null,
+  "episodes": [
+    {
+      "episode_id": 0,
+      "episode_seed": 2,
+      "control_mode": "pd_joint_delta_pos",
+      "elapsed_steps": 178,
+      "reset_kwargs": {
+        "options": {},
+        "seed": 2
+      },
+      "success": true
+    },
+    {
+      "episode_id": 1,
+      "episode_seed": 4,
+      "control_mode": "pd_joint_delta_pos",
+      "elapsed_steps": 156,
+      "reset_kwargs": {
+        "options": {},
+        "seed": 4
+      },
+      "success": true
+    }
+  ]
+}

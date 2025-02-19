@@ -49,7 +49,6 @@ video/
 mani_skill/bingwen
 mani_skill/data
 
-/examples
 /runs
 .eggs
 /mani_skill/assets/robots/mobile_aloha/meshes

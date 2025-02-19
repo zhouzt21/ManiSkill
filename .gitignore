@@ -48,3 +48,10 @@ htmlcov/
 video/
 mani_skill/bingwen
 mani_skill/data
+
+/examples
+/runs
+.eggs
+/mani_skill/assets/robots/mobile_aloha
+/mani_skill/examples/teleoperation
+/mani_skill/examples/motionplanning

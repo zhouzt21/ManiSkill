@@ -16,3 +16,5 @@ from .place_sphere import PlaceSphereEnv
 from .roll_ball import RollBallEnv
 from .push_t import PushTEnv
 from .test_table import TestTableEnv
+
+from .build_block import BuildBlockEnv

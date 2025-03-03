@@ -4,6 +4,8 @@ from .pd_joint_pos import (
     PDJointPosControllerConfig,
     PDJointPosMimicController,
     PDJointPosMimicControllerConfig,
+    PDJointPosMimicAsymmetricController,
+    PDJointPosMimicAsymmetricControllerConfig
 )
 from .pd_ee_pose import (
     PDEEPosController,

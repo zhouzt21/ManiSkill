@@ -8,10 +8,24 @@ python -m mani_skill.trajectory.replay_trajectory \
   --use-first-env-state -c pd_ee_delta_pos -o state \
   --save-traj --num-procs 10 -b cpu
 
+python -m mani_skill.trajectory.replay_trajectory \
+  --traj-path ./demos/PushCube-v1/motionplanning/trajectory.h5 \
+  --use-first-env-state -c pd_ee_delta_pos -o state \
+  --save-traj --num-procs 10 -b cpu  # process太多容易卡死
+
 python bc.py --env-id "PushCube-v1" \
   --demo-path ~/.maniskill/demos/PushCube-v1/motionplanning/trajectory.state.pd_ee_delta_pos.cpu.h5 \
   --control-mode "pd_ee_delta_pos" --sim-backend "cpu" --max-episode-steps 100 \
   --total-iters 10000
+
+python ./examples/baselines/bc/bc.py --env-id "PushCube-v1" \
+  --demo-path ./demos/PushCube-v1/motionplanning/trajectory.state.pd_ee_delta_pos.cpu.h5 \
+  --control-mode "pd_ee_delta_pos" --sim-backend "cpu" --max-episode-steps 100 \
+  --total-iters 10000 --num_eval_envs 1
+
+python ./examples/baselines/bc/bc_eval.py --env-id "PushCube-v1" \
+  --control-mode "pd_ee_delta_pos" --sim-backend "cpu" --max-episode-steps 100 \
+  --num_eval_envs 1 --exp_name "PushCube-v1 eval"
 
 # PickCube-v1
 python -m mani_skill.trajectory.replay_trajectory \

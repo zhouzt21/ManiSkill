@@ -44,3 +44,15 @@ imgui.ini
 # testing
 .coverage*
 htmlcov/
+
+video/
+mani_skill/bingwen
+mani_skill/data
+
+/runs
+.eggs
+/mani_skill/assets/robots/mobile_aloha/meshes
+/mani_skill/examples/teleoperation
+/mani_skill/examples/motionplanning
+
+/examples/tutorials/demos

@@ -188,7 +188,6 @@ class ManiSkillDataset(Dataset):
         done = torch.from_numpy(self.dones[idx]).to(device=self.device)
         return obs, action, done
 
-
 class Actor(nn.Module):
     def __init__(self, state_dim: int, action_dim: int):
         super(Actor, self).__init__()

@@ -744,13 +744,19 @@
         <axis xyz="1 0 0" />
         <limit lower="-10" upper="10" effort="100" velocity="1000" />
     </joint>
+    <link name="fl_end_effector" />
+    <joint name="fl_ee_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="fl_link6"/>
+        <child link="fl_end_effector"/>
+    </joint>
 
-    <!-- 相机的链接 -->
+    <!-- camera -->
     <link name="left_camera">
         <visual>
             <origin xyz="0 -0.032 0" rpy="1.57 0 1.57"/>
             <geometry>
-                <mesh filename="../meshes/d435.dae" /> <!-- 根据D435相机的实际尺寸调整 -->
+                <mesh filename="../meshes/d435.dae" /> <!-- need to be changed according to real D435 size -->
             </geometry>
             <!-- <material name="black">
                 <color rgba="0.8 0.8 0.8 1"/>
@@ -763,18 +769,18 @@
             </geometry>
         </collision>
         <inertial>
-        <mass value="0.1"/> <!-- 相机的估计质量 -->
+        <mass value="0.1"/> <!-- the estimated mass of camera -->
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/> <!-- 估计的惯性张量 -->
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/> <!-- the estimated inertia of camera -->
         </inertial>
     </link>
 
-    <!-- 连接相机和末端执行器的关节 -->
+    <!-- the joint that connecting ee and camera -->
     <joint name="left_camera_joint" type="fixed">
         <parent link="fl_link6"/>
         <child link="left_camera"/>
-        <origin xyz="0.07 0.032 0.065" rpy="0 0.4 0"/> <!-- 根据相机的安装位置调整 -->
-        <!-- <origin xyz="0.07 0.032 0.06" rpy="0 0 0"/> 根据相机的安装位置调整 -->
+        <origin xyz="0.07 0.032 0.065" rpy="0 0.4 0"/> <!-- need to be changed according to the real position of camera -->
+        <!-- <origin xyz="0.07 0.032 0.06" rpy="0 0 0"/>need to be changed according to the real position of camera -->
     </joint>
 
     <link name="fl_link7">
@@ -1091,14 +1097,20 @@
         <axis xyz="1 0 0" />
         <limit lower="-10" upper="10" effort="100" velocity="1000" />
     </joint>
+    <link name="fr_end_effector" />
+    <joint name="fr_ee_joint" type="fixed">
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <parent link="fr_link6"/>
+        <child link="fr_end_effector"/>
+    </joint>
 
 
-    <!-- 相机的链接 -->
+    <!-- camera -->
     <link name="right_camera">
         <visual>
             <origin xyz="0 -0.032 0" rpy="1.57 0 1.57"/>
             <geometry>
-                <mesh filename="../meshes/d435.dae" /> <!-- 根据D435相机的实际尺寸调整 -->
+                <mesh filename="../meshes/d435.dae" /> <!-- need to be changed according to real D435 size-->
             </geometry>
             <!-- <material name="black">
                 <color rgba="0 0 0.1 1"/>
@@ -1111,17 +1123,17 @@
             </geometry>
         </collision>
         <inertial>
-        <mass value="0.1"/> <!-- 相机的估计质量 -->
+        <mass value="0.1"/> <!-- the estimated mass of camera -->
         <origin xyz="0 0 0" rpy="0 0 0"/>
-        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/> <!-- 估计的惯性张量 -->
+        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/> <!-- the estimated inertia of camera -->
         </inertial>
     </link>
 
-    <!-- 连接相机和末端执行器的关节 -->
+    <!-- the joint that connecting ee and camera -->
     <joint name="right_camera_joint" type="fixed">
         <parent link="fr_link6"/>
         <child link="right_camera"/>
-        <origin xyz="0.07 0.032 0.065" rpy="0 0.4 0"/> <!-- 根据相机的安装位置调整 -->
+        <origin xyz="0.07 0.032 0.065" rpy="0 0.4 0"/> <!-- need to be changed according to the real position of camera -->
     </joint>
 
     <link name="fr_link7">

@@ -1,0 +1,1 @@
+python -m embodied_agent.examples.demo_rdt  --record_dir 'video' --render_mode sensors 

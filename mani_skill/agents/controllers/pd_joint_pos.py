@@ -18,7 +18,7 @@ class PDJointPosController(BaseController):
 
     def _get_joint_limits(self):
         qlimits = (
-            self.articulation.get_qlimits()[0, self.active_joint_indices].cpu().numpy()
+            self.articulation.get_qlimits()[0, self.active_joint_indices.long()].cpu().numpy()
         )
         # Override if specified
         if self.config.lower is not None:
@@ -67,7 +67,7 @@ class PDJointPosController(BaseController):
 
     def set_drive_targets(self, targets):
         self.articulation.set_joint_drive_targets(
-            targets, self.joints, self.active_joint_indices
+            targets, self.joints, self.active_joint_indices.long()
         )
 
     def set_action(self, action: Array):
@@ -133,3 +133,66 @@ class PDJointPosMimicController(PDJointPosController):
 
 class PDJointPosMimicControllerConfig(PDJointPosControllerConfig):
     controller_cls = PDJointPosMimicController
+
+class PDJointPosMimicAsymmetricController(PDJointPosController):
+    def _get_joint_limits(self):
+        """
+        Get joint limits while ensuring the main joint (positive range) is used for control,
+        and the mimic joint (negative range) is derived accordingly.
+        """
+        joint_limits = super()._get_joint_limits()
+        main_limit = joint_limits[0:-1]
+        mimic_limit = joint_limits[1:]
+        diff = main_limit - -mimic_limit[..., ::-1]
+        assert np.allclose(diff, 0), "Mimic joints should have the same limit, but got {}".format(joint_limits)
+
+        if main_limit[0, -1] > 0: 
+            return main_limit  # Return the limits for the main joint
+        else:
+            return mimic_limit
+
+    def set_drive_targets(self, targets):
+        """
+        Set drive targets for both the main and mimic joints.
+        """
+        # Compute the mimic joint target based on the main joint target
+        # mimic_targets = -targets
+
+        # Set the drive targets for both joints
+        self.articulation.set_joint_drive_targets(
+            targets, self.joints, self.active_joint_indices.long()
+        )
+
+    def set_action(self, action: Array):
+        """
+        Override the action to handle asymmetric mimic joints.
+        """
+        # if np.mean(np.abs(action)) > 0:
+        # import pdb; pdb.set_trace()
+        action = self._preprocess_action(action)
+        self._step = 0
+        self._start_qpos = self.qpos
+
+        mimic_action = -action
+        action = torch.cat([action, mimic_action], dim=-1)
+
+        if self.config.use_delta:
+            if self.config.use_target:
+                self._target_qpos = self._target_qpos + action
+            else:
+                self._target_qpos = self._start_qpos + action
+        # else:
+        #     # Only set the main joint's target position
+        #     self._target_qpos = torch.broadcast_to(
+        #         action, self._start_qpos.shape  # Only considering the main joint
+        #     ).clone()
+
+        print("Driving targets: ", self._target_qpos)
+
+        if self.config.interpolate:
+            self._step_size = (self._target_qpos - self._start_qpos) / self._sim_steps
+        else:
+            self.set_drive_targets(self._target_qpos)
+
+class PDJointPosMimicAsymmetricControllerConfig(PDJointPosControllerConfig):
+    controller_cls = PDJointPosMimicAsymmetricController

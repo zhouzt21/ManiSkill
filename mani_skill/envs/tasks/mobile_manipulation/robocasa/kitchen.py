@@ -3,6 +3,7 @@ from typing import Dict
 
 import os
 import numpy as np
+import random
 import sapien
 import torch
 
@@ -28,7 +29,7 @@ from mani_skill.utils.scene_builder.robocasa.utils.scene_utils import ROBOCASA_A
     "RoboCasaKitchen-v1", max_episode_steps=100, asset_download_ids=["RoboCasa"]
 )
 class RoboCasaKitchenEnv(BaseEnv):
-    SUPPORTED_ROBOTS = ["fetch", "none"]
+    SUPPORTED_ROBOTS = ["fetch", "none", "mobile_aloha"]
     SUPPORTED_REWARD_MODES = ["none"]
     """
     Initialized a Base Kitchen environment.
@@ -248,7 +249,7 @@ class RoboCasaKitchenEnv(BaseEnv):
 
     @property
     def _default_sim_config(self):
-        return SimConfig(spacing=8, control_freq=20)
+        return SimConfig(spacing=8, sim_freq=200, control_freq=25) # modify the sim_freq parameter here. 
 
     @property
     def _default_sensor_configs(self):
@@ -285,7 +286,16 @@ class RoboCasaKitchenEnv(BaseEnv):
 
     def _load_scene(self, options: dict):
         self.scene_builder = RoboCasaSceneBuilder(self)
-        self.scene_builder.build()
+
+        build_config_idxs = []
+        for scene_idx in range(self.num_envs):
+            # Total number of configs is 10 * 12 = 120
+            config_idx = random.sample(
+                [layout_id * 12 + style_id for layout_id, style_id in self.layout_and_style_ids], 
+                1)[0]
+            build_config_idxs.append(config_idx)
+
+        self.scene_builder.build(build_config_idxs)
         # self.fixtures = data["fixtures"]
         # self.actors = data["actors"]
         # self.fixture_configs = data["fixture_configs"]

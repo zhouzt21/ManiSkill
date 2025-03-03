@@ -169,6 +169,7 @@ class RoboCasaSceneBuilder(SceneBuilder):
                 config_idx = self.env._batched_episode_rng[i].randint(0, 120)
                 build_config_idxs.append(config_idx)
 
+        ## TODO the random scene is generated here.
         for scene_idx, build_config_idx in enumerate(build_config_idxs):
             layout_idx = build_config_idx // 12  # Get layout index (0-9)
             style_idx = build_config_idx % 12  # Get style index (0-11)
@@ -233,6 +234,7 @@ class RoboCasaSceneBuilder(SceneBuilder):
                 # addto overall fixture list
                 arena.extend(group_fixtures)
 
+            # TODO Maybe the data you should know
             # maps each fixture name to its object class
             fixtures: Dict[str, Fixture] = dict()
             # maps each fixture name to its configuration
@@ -245,6 +247,7 @@ class RoboCasaSceneBuilder(SceneBuilder):
                 fixture_name = fixture_config["name"]
 
                 # stack of fixtures, handled separately
+                # "stack" refers to stacking multiple fixtures vertically together to form an integrated structure. 
                 if fixture_config["type"] == "stack":
                     stack = FixtureStack(
                         self.scene,
@@ -578,6 +581,8 @@ class RoboCasaSceneBuilder(SceneBuilder):
                     self.env.agent.robot.set_pose(
                         Pose.create_from_pq(p=xyz, q=self.env.agent.robot.pose.q)
                     )
+                elif self.env.robot_uids == "mobile_aloha":
+                    self.env.agent.robot.set_pose(self.robot_poses[env_idx])
 
     def get_fixture_cfgs(self, fixtures):
         """

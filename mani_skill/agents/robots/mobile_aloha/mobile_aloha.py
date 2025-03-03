@@ -19,9 +19,6 @@ from mani_skill.utils.structs.link import Link
 from mani_skill.utils.structs.types import Array
 
 
-# FIXME: EE control is not ready!!!
-
-
 @register_agent()
 class MobileAloha(BaseAgent):
     uid = "mobile_aloha"
@@ -32,17 +29,17 @@ class MobileAloha(BaseAgent):
     def _sensor_configs(self):
         return [
             CameraConfig(
-                uid="cam_low",
-                pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
-                width=128,
-                height=128,
+                uid="cam_high",
+                pose=Pose.create_from_pq([0, 0, 0.15], [1, 0, 0, 0]),
+                width=640,
+                height=480,
                 fov=2,
                 near=0.01,
                 far=100,
                 entity_uid="camera_link1",
             ),
             CameraConfig(
-                uid="cam_high",
+                uid="cam_top",
                 pose=Pose.create_from_pq([0, 0, 0], [1, 0, 0, 0]),
                 width=640,
                 height=480,
@@ -84,8 +81,8 @@ class MobileAloha(BaseAgent):
         # self.arm_force_limit?
 
         # grippers
-        self.fl_ee_link_name = "fl_link6"
-        self.fr_ee_link_name = "fr_link6"
+        self.fl_ee_link_name = "fl_end_effector"
+        self.fr_ee_link_name = "fr_end_effector"
         self.fl_gripper_joint_names = ["fl_joint7", "fl_joint8"] # front-left
         self.fr_gripper_joint_names = ["fr_joint7", "fr_joint8"] # front-right
 
@@ -98,8 +95,11 @@ class MobileAloha(BaseAgent):
 
         self.joint_stiffness = 1000
         self.joint_damping = 200
+        self.arm_force_limit = 100
+        self.arm_joint_limits = None
 
         super().__init__(*args, **kwargs)
+
 
     @property
     def _controller_configs(self):
@@ -243,13 +243,14 @@ class MobileAloha(BaseAgent):
                 kwargs1 = dict(joint_names=self.fl_arm_joint_names)
                 kwargs2 = dict(joint_names=self.fr_arm_joint_names)
 
+            # two mini modes for each  mode
             controller_configs[control_mode] = dict(
                 arm=config_fn(**kwargs1),
                 gripper=gripper_pd_joint_pos_fn(
                     joint_names=self.fl_gripper_joint_names
                 )
             )
-
+            # two mini modes for each  mode
             controller_configs["bi_" + control_mode] = dict(
                 arm_left=config_fn(**kwargs1),
                 gripper_left=gripper_pd_joint_pos_fn(
@@ -269,31 +270,35 @@ class MobileAloha(BaseAgent):
         Get the proprioceptive state of the agent, default is the qpos and qvel of the robot and any controller state.
         """
         if 'bi' in self.control_mode:
-            qpos_arm_l = self.controller.controllers['arm_left'].qpos
-            qvel_arm_l = self.controller.controllers['arm_left'].qvel
-            qpos_gripper_l = self.controller.controllers['gripper_left'].qpos[..., :1]
-            qvel_gripper_l = self.controller.controllers['gripper_left'].qvel[..., :1]
-            
-            qpos_arm_r = self.controller.controllers['arm_right'].qpos
-            qvel_arm_r = self.controller.controllers['arm_right'].qvel
-            qpos_gripper_r = self.controller.controllers['gripper_right'].qpos[..., :1]
-            qvel_gripper_r = self.controller.controllers['gripper_right'].qvel[..., :1]
+            qpos_l = self.controller.controllers['arm_left'].qpos
+            qvel_l = self.controller.controllers['arm_left'].qvel
+            if 'gripper_left' in self.controller.controllers:
+                qpos_gripper_l = self.controller.controllers['gripper_left'].qpos[..., :1]
+                qvel_gripper_l = self.controller.controllers['gripper_left'].qvel[..., :1]
 
-            qpos_l = torch.concat([qpos_arm_l, qpos_gripper_l], dim=-1)
-            qvel_l = torch.concat([qvel_arm_l, qvel_gripper_l], dim=-1)
-            qpos_r = torch.concat([qpos_arm_r, qpos_gripper_r], dim=-1)
-            qvel_r = torch.concat([qvel_arm_r, qvel_gripper_r], dim=-1)
+                qpos_l = torch.concat([qpos_l, qpos_gripper_l], dim=-1)
+                qvel_l = torch.concat([qvel_l, qvel_gripper_l], dim=-1)
+            
+            qpos_r = self.controller.controllers['arm_right'].qpos
+            qvel_r = self.controller.controllers['arm_right'].qvel
+            if 'gripper_right' in self.controller.controllers:
+                qpos_gripper_r = self.controller.controllers['gripper_right'].qpos[..., :1]
+                qvel_gripper_r = self.controller.controllers['gripper_right'].qvel[..., :1]
+
+                qpos_r = torch.concat([qpos_r, qpos_gripper_r], dim=-1)
+                qvel_r = torch.concat([qvel_r, qvel_gripper_r], dim=-1)
 
             obs = dict(qpos_l=qpos_l, qvel_l=qvel_l, qpos_r=qpos_r, qvel_r=qvel_r)
 
         else:
-            qpos_arm = self.controller.controllers['arm'].qpos
-            qvel_arm = self.controller.controllers['arm'].qvel
-            qpos_gripper = self.controller.controllers['gripper'].qpos[..., :1]
-            qvel_gripper = self.controller.controllers['gripper'].qvel[..., :1]
+            qpos = self.controller.controllers['arm'].qpos
+            qvel = self.controller.controllers['arm'].qvel
+            if 'gripper' in self.controller.controllers:
+                qpos_gripper = self.controller.controllers['gripper'].qpos[..., :1]
+                qvel_gripper = self.controller.controllers['gripper'].qvel[..., :1]
 
-            qpos = torch.concat([qpos_arm, qpos_gripper], dim=-1)
-            qvel = torch.concat([qvel_arm, qvel_gripper], dim=-1)
+                qpos = torch.concat([qpos, qpos_gripper], dim=-1)
+                qvel = torch.concat([qvel, qvel_gripper], dim=-1)
 
             obs = dict(qpos=qpos, qvel=qvel)
 
@@ -333,14 +338,10 @@ class MobileAloha(BaseAgent):
         state["controller"] = self.controller.get_state()
 
         return state
-    
-    def is_grasping(self, object: Actor | None = None):
 
-        # print("mobile_aloha is_grasping")
+    def is_grasping(self, object: Actor | None = None):
         return False
-    
 
     def is_static(self, threshold: float):
 
-        print("mobile_aloha is_static")
         return super().is_static(threshold)

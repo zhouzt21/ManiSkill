@@ -19,6 +19,12 @@ from mani_skill.utils.structs.articulation import Articulation
 from mani_skill.utils.structs.articulation_joint import ArticulationJoint
 from mani_skill.utils.structs.pose import Pose
 
+from mani_skill.agents.utils import (
+    flatten_action_spaces,
+    get_active_joint_indices,
+    get_joints_by_names,
+)
+
 # currently fast_kinematics has some bugs on some systems so we use the slower pytorch kinematics package instead.
 # try:
 #     import fast_kinematics
@@ -185,3 +191,69 @@ class Kinematics:
                 )
             else:
                 return None
+
+    def compute_fk(self, qpos: torch.Tensor):
+        """Given joint positions, compute the end effector pose
+
+        Args:
+            qpos (torch.Tensor): joint positions of every active joint in the articulation
+        """
+        if self.use_gpu_ik:
+            qpos = qpos[..., self.active_ancestor_joint_idxs]
+            tf_matrix = self.pk_chain.forward_kinematics(qpos).get_matrix()
+            pos = tf_matrix[:, :3, 3]
+            rot = pk.matrix_to_quaternion(tf_matrix[:, :3, :3])
+            return Pose.create_from_pq(pos, rot, device=self.device)
+        else:
+            self.pmodel.compute_forward_kinematics(qpos[0].cpu().numpy())
+            ee_pose = self.pmodel.get_link_pose(self.end_link_idx)
+            return Pose.create(ee_pose, device=self.device)
+
+def transfer_qpos_cross_embodiment(
+    # source articulation
+    src_articulation: Articulation,
+    src_urdf_path: str,
+    src_joint_names: List[str],
+    src_ee_link_name: str,
+    src_qpos_active: torch.Tensor,
+    # target articulation
+    tgt_articulation: Articulation,
+    tgt_urdf_path: str,
+    tgt_joint_names: List[str],
+    tgt_ee_link_name: str,
+    tgt_qpos: torch.Tensor,
+):
+    """Transfer joint positions from one articulation to another."""
+    src_active_joint_indices = get_active_joint_indices(src_articulation, src_joint_names)
+    tgt_active_joint_indices = get_active_joint_indices(tgt_articulation, tgt_joint_names)
+
+    src_kinematics = Kinematics(
+        src_urdf_path,
+        src_ee_link_name,
+        src_articulation,
+        src_active_joint_indices,
+    )
+
+    tgt_kinematics = Kinematics(
+        tgt_urdf_path,
+        tgt_ee_link_name,
+        tgt_articulation,
+        tgt_active_joint_indices,
+    )
+
+    src_qpos = torch.zeros(src_qpos_active.shape[0], src_articulation.max_dof, 
+                           device=src_articulation.device, dtype=src_qpos_active.dtype)
+    src_qpos[:, src_active_joint_indices] = src_qpos_active
+
+    tgt_ee_pose = src_ee_pose = src_kinematics.compute_fk(src_qpos)
+
+    num_trials = 10
+    for _ in range(num_trials):
+        tgt_qpos_active = tgt_kinematics.compute_ik(tgt_ee_pose, tgt_qpos)
+        if tgt_qpos_active is not None:
+            break
+
+    if tgt_qpos_active is None:
+        raise ValueError("Failed to find a valid IK solution")
+
+    return tgt_qpos_active

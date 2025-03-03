@@ -339,9 +339,9 @@ class MobileAloha(BaseAgent):
 
         return state
 
-
     def is_grasping(self, object: Actor | None = None):
         return False
 
     def is_static(self, threshold: float):
+
         return super().is_static(threshold)

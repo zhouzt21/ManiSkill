@@ -54,3 +54,5 @@ mani_skill/data
 /mani_skill/assets/robots/mobile_aloha/meshes
 /mani_skill/examples/teleoperation
 /mani_skill/examples/motionplanning
+
+/examples/tutorials/demos
